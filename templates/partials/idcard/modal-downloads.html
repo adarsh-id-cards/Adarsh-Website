@@ -1,0 +1,405 @@
+<!-- Download PDF Modal -->
+<div id="downloadPdfModal" class="center-modal-overlay center-modal-theme-purple" style="display:none;">
+  <div class="center-modal-card" @click.stop>
+    <!-- Header -->
+    <div class="center-modal-header">
+      <h3><i class="fa-solid fa-file-pdf"></i> Download PDF</h3>
+      <button type="button" class="center-modal-header-close" id="downloadPdfClose" title="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <!-- Body -->
+    <div class="center-modal-body-area">
+    <p class="center-modal-subtitle">List: <strong id="downloadPdfListName"></strong></p>
+    <p class="center-modal-subtitle mb-4">Cards: <strong id="downloadPdfCardCount">0</strong></p>
+    
+    <label class="center-modal-label text-left block">Select Template:</label>
+    <select id="downloadPdfTemplate" class="center-modal-select">
+      <option value="">Default (No Footer Instructions)</option>
+    </select>
+    <p class="center-modal-note">Template determines the footer instructions printed on the PDF.</p>
+
+    <!-- Dense column warning - only shown when column count > 15 -->
+    <div id="downloadPdfDenseWarning" style="display:none;" class="mt-3 mb-2 p-3 rounded-lg bg-amber-50 border border-amber-300">
+      <div class="flex items-center gap-2 mb-2">
+        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+        <span class="font-semibold text-amber-700 text-sm">Many Columns Detected (<span id="downloadPdfColCount">0</span>)</span>
+      </div>
+      <p class="text-xs text-amber-700 mb-0">Auto-fit is enabled. Font size, column widths and wrapping will be adjusted automatically for dense tables.</p>
+    </div>
+
+    <!-- Shorten Column Titles option -->
+    <div class="mt-3 mb-1 flex items-center gap-2">
+      <input type="checkbox" id="downloadPdfShortenTitles"
+             class="w-4 h-4 rounded border-gray-400 accent-purple-600 cursor-pointer">
+      <label for="downloadPdfShortenTitles" class="text-sm text-gray-700 cursor-pointer select-none">
+        Shorten Column Titles
+        <span class="text-xs text-gray-500 ml-1">(e.g. Date Of Birth -> DOB, Mobile No -> Mob.)</span>
+      </label>
+    </div>
+    
+    <div id="downloadPdfProgress" class="center-modal-progress">
+      <div class="center-modal-progress-track">
+        <div id="downloadPdfBar" class="center-modal-progress-bar"></div>
+      </div>
+      <p class="center-modal-progress-text" id="downloadPdfStatus">Preparing...</p>
+    </div>
+    </div><!-- end body-area -->
+    <!-- Footer -->
+    <div class="center-modal-footer-area">
+      <button id="downloadPdfCancel" class="center-modal-btn center-modal-btn-cancel">Cancel</button>
+      <button id="downloadPdfConfirm" class="center-modal-btn center-modal-btn-confirm">Download</button>
+    </div>
+  </div>
+</div>
+
+<!-- Download XLSX Modal -->
+<div id="downloadXlsxModal" class="center-modal-overlay center-modal-theme-green" style="display:none;">
+  <div class="center-modal-card" @click.stop>
+    <!-- Header -->
+    <div class="center-modal-header">
+      <h3><i class="fa-solid fa-file-excel"></i> Download Excel</h3>
+      <button type="button" class="center-modal-header-close" id="downloadXlsxClose" title="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <!-- Body -->
+    <div class="center-modal-body-area">
+    <p class="center-modal-subtitle">List: <strong id="downloadXlsxListName"></strong></p>
+    <p class="center-modal-subtitle mb-4">Cards: <strong id="downloadXlsxCardCount">0</strong></p>
+    <p class="center-modal-note mt-0">Export all card data to an Excel spreadsheet.</p>
+    <div id="downloadXlsxProgress" class="center-modal-progress">
+      <div class="center-modal-progress-track">
+        <div id="downloadXlsxBar" class="center-modal-progress-bar"></div>
+      </div>
+      <p class="center-modal-progress-text" id="downloadXlsxStatus">Preparing...</p>
+    </div>
+    </div><!-- end body-area -->
+    <!-- Footer -->
+    <div class="center-modal-footer-area">
+      <button id="downloadXlsxCancel" class="center-modal-btn center-modal-btn-cancel">Cancel</button>
+      <button id="downloadXlsxConfirm" class="center-modal-btn center-modal-btn-confirm">Download</button>
+    </div>
+  </div>
+</div>
+
+<!-- Download Word Modal -->
+<div id="downloadDocxModal" class="center-modal-overlay center-modal-theme-blue" style="display:none;">
+  <div class="center-modal-card" @click.stop>
+    <!-- Header -->
+    <div class="center-modal-header">
+      <h3><i class="fa-solid fa-file-word"></i> Download Word</h3>
+      <button type="button" class="center-modal-header-close" id="downloadDocxClose" title="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <!-- Body -->
+    <div class="center-modal-body-area">
+    <p class="center-modal-subtitle">List: <strong id="downloadDocxListName"></strong></p>
+    <p class="center-modal-subtitle mb-4">Cards: <strong id="downloadDocxCardCount">0</strong></p>
+    <label class="center-modal-label text-left block">Select Template:</label>
+    <select id="downloadDocxTemplate" class="center-modal-select">
+      <option value="">Default (No Footer Instructions)</option>
+    </select>
+    <p class="center-modal-note">Template determines the footer instructions printed on the Word document.</p>
+    <div id="downloadDocxProgress" class="center-modal-progress">
+      <div class="center-modal-progress-track">
+        <div id="downloadDocxBar" class="center-modal-progress-bar"></div>
+      </div>
+      <p class="center-modal-progress-text" id="downloadDocxStatus">Preparing...</p>
+    </div>
+    </div><!-- end body-area -->
+    <!-- Footer -->
+    <div class="center-modal-footer-area">
+      <button id="downloadDocxCancel" class="center-modal-btn center-modal-btn-cancel">Cancel</button>
+      <button id="downloadDocxConfirm" class="center-modal-btn center-modal-btn-confirm">Download</button>
+    </div>
+  </div>
+</div>
+
+<!-- Download Images Modal -->
+<div id="downloadImgModal" class="center-modal-overlay center-modal-theme-amber" style="display:none;">
+  <div class="center-modal-card" @click.stop>
+    <!-- Header -->
+    <div class="center-modal-header">
+      <h3><i class="fa-solid fa-images"></i> Download Images</h3>
+      <button type="button" class="center-modal-header-close" id="downloadImgClose" title="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <!-- Body -->
+    <div class="center-modal-body-area">
+    <p class="center-modal-subtitle">List: <strong id="downloadImgListName"></strong></p>
+    <p class="center-modal-subtitle mb-4">Cards: <strong id="downloadImgCardCount">0</strong></p>
+    <p class="center-modal-note mt-0">Download all images as a ZIP file.</p>
+    <div id="downloadImgProgress" class="center-modal-progress">
+      <div class="center-modal-progress-track">
+        <div id="downloadImgBar" class="center-modal-progress-bar"></div>
+      </div>
+      <p class="center-modal-progress-text" id="downloadImgStatus">Preparing...</p>
+    </div>
+    </div><!-- end body-area -->
+    <!-- Footer -->
+    <div class="center-modal-footer-area">
+      <button id="downloadImgCancel" class="center-modal-btn center-modal-btn-cancel">Cancel</button>
+      <button id="downloadImgConfirm" class="center-modal-btn center-modal-btn-confirm">Download</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  #reprintPickerModal .reprint-picker-card {
+    width: 90vw;
+    height: 90vh;
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: 14px;
+    min-height: 0;
+  }
+  #reprintPickerModal .reprint-picker-header {
+    background: linear-gradient(135deg, #d97706, #f59e0b);
+    padding: 14px 18px;
+  }
+  #reprintPickerModal .reprint-picker-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+    text-align: left;
+    background: #f8fafc;
+  }
+  #reprintPickerModal .reprint-picker-search {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 100%;
+  }
+  #reprintPickerModal .search-box {
+    flex: 1 1 auto;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+    background: #fff !important;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+  }
+  #reprintPickerModal .search-box .search-icon {
+    left: 11px;
+    font-size: 15px;
+  }
+  #reprintPickerModal .search-box .search-input {
+    height: 40px;
+    min-height: 40px;
+    padding: 10px 38px 10px 33px;
+    font-size: 14px;
+    line-height: 1.2;
+    width: 100% !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+    border: none !important;
+  }
+  #reprintPickerModal .search-box .search-input::placeholder {
+    color: #9ca3af !important;
+  }
+  #reprintPickerModal .search-box .search-clear-btn {
+    right: 10px;
+    width: 20px;
+    height: 20px;
+  }
+  #reprintPickerModal .reprint-picker-selection {
+    margin-left: 0;
+    font-size: 12px;
+    color: #475569;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    padding: 0 12px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    width: fit-content;
+  }
+  #reprintPickerModal #reprintPickerPreview {
+    display: none;
+    padding: 8px 10px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    color: #1e3a8a;
+    font-size: 12px;
+  }
+  #reprintPickerModal .reprint-picker-table-wrap {
+    flex: 1;
+    min-height: 0;
+    border: 1px solid #dbe3ec;
+    border-radius: 0;
+    overflow: auto;
+    background: #fff;
+  }
+  #reprintPickerModal .reprint-picker-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 980px;
+  }
+  #reprintPickerModal .reprint-picker-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #f1f5f9;
+    color: #334155;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 8px 6px;
+    text-align: left;
+    border-bottom: 1px solid #dbe3ec;
+    white-space: nowrap;
+  }
+  #reprintPickerModal .reprint-picker-table thead th:first-child,
+  #reprintPickerModal .reprint-picker-table thead th:nth-child(2) {
+    text-align: center;
+  }
+  #reprintPickerModal .reprint-picker-table tbody td {
+    padding: 7px 6px;
+    border-bottom: 1px solid #eef2f7;
+    font-size: 12px;
+    color: #1f2937;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  #reprintPickerModal .reprint-picker-table tbody tr:hover {
+    background: #f8fafc;
+  }
+  #reprintPickerModal .reprint-picker-table .center-cell {
+    text-align: center;
+  }
+  #reprintPickerModal .reprint-picker-table .photo-cell img {
+    width: 28px;
+    height: 34px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid #dbe3ec;
+  }
+  #reprintPickerModal .reprint-picker-footer {
+    border-top: 1px solid #e5e7eb;
+    background: #f8fafc;
+    padding: 12px 16px;
+    gap: 10px;
+  }
+  #reprintPickerModal #reprintPickerCancel {
+    min-width: 96px;
+  }
+  #reprintPickerModal #reprintPickerRequestBtn {
+    min-width: 150px;
+    background: linear-gradient(135deg, #d97706, #f59e0b);
+    color: #fff;
+    border: none;
+    opacity: 1;
+  }
+  #reprintPickerModal #reprintPickerRequestBtn:hover:not(:disabled) {
+    filter: brightness(0.95);
+  }
+  #reprintPickerModal #reprintPickerRequestBtn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    color: #fff;
+  }
+  #reprintPickerConfirmModal #reprintPickerEditBtn {
+    min-width: 110px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+  }
+  #reprintPickerConfirmModal #reprintPickerEditBtn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  #reprintPickerConfirmModal #reprintPickerConfirmBtn {
+    min-width: 150px;
+    background: linear-gradient(135deg, #d97706, #f59e0b);
+    color: #fff;
+    border: none;
+  }
+  #reprintPickerConfirmModal #reprintPickerConfirmBtn:hover:not(:disabled) {
+    filter: brightness(0.95);
+  }
+  #reprintPickerConfirmModal #reprintPickerConfirmBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  @media (max-width: 900px) {
+    #reprintPickerModal .reprint-picker-search {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    #reprintPickerModal .reprint-picker-selection {
+      width: fit-content;
+      height: 32px;
+    }
+  }
+  #reprintPickerConfirmModal .reprint-confirm-header {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+  }
+  #reprintPickerConfirmModal .reprint-confirm-preview {
+    display: none;
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    border-radius: 8px;
+    color: #166534;
+    font-size: 13px;
+  }
+</style>
+
+<!-- Reprint Picker Modal (Download list only) -->
+<div id="reprintPickerModal" class="center-modal-overlay" style="display:none;z-index:1200;">
+  <div class="center-modal-card reprint-picker-card" @click.stop>
+    <div class="center-modal-header reprint-picker-header">
+      <h3><i class="fa-solid fa-rotate"></i> Reprint Cards</h3>
+      <button type="button" class="center-modal-header-close" id="reprintPickerClose" title="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="center-modal-body-area reprint-picker-body">
+      <div class="reprint-picker-search">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="reprintPickerSearchInput" placeholder="Search cards to reprint" class="search-input" autocomplete="off">
+          <button class="search-clear-btn" id="reprintPickerSearchClearBtn" type="button" title="Clear search" aria-label="Clear search">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <span id="reprintPickerSelectedInfo" class="reprint-picker-selection">0 selected</span>
+      </div>
+      <div id="reprintPickerPreview"></div>
+      <div class="reprint-picker-table-wrap idcard-table">
+        <table class="reprint-picker-table">
+          <thead id="reprintPickerTableHead"></thead>
+          <tbody id="reprintPickerTableBody">
+            <tr><td colspan="5" style="padding:20px;text-align:center;color:#6b7280;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="center-modal-footer-area reprint-picker-footer">
+      <button id="reprintPickerCancel" class="center-modal-btn center-modal-btn-cancel" type="button">Cancel</button>
+      <button id="reprintPickerRequestBtn" class="center-modal-btn center-modal-btn-confirm" type="button" disabled>Request Reprint</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reprint Confirmation Modal -->
+<div id="reprintPickerConfirmModal" class="center-modal-overlay" style="display:none;z-index:1210;">
+  <div class="center-modal-card" style="width:min(620px,94vw);">
+    <div class="center-modal-header reprint-confirm-header">
+      <h3><i class="fa-solid fa-circle-question"></i> Confirm Reprint</h3>
+      <button type="button" class="center-modal-header-close" id="reprintPickerConfirmClose" title="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="center-modal-body-area">
+      <p class="center-modal-subtitle">Selected cards: <strong id="reprintPickerConfirmCount">0</strong></p>
+      <p class="center-modal-note" style="margin-top:6px;">Do you want to edit selected card data first, or print as it is?</p>
+      <div id="reprintPickerConfirmPreview" class="reprint-confirm-preview"></div>
+    </div>
+    <div class="center-modal-footer-area">
+      <button id="reprintPickerConfirmCancel" class="center-modal-btn center-modal-btn-cancel" type="button">Cancel</button>
+      <button id="reprintPickerEditBtn" class="center-modal-btn" type="button">Want to Edit</button>
+      <button id="reprintPickerConfirmBtn" class="center-modal-btn" type="button">Next Without Edit</button>
+    </div>
+  </div>
+</div>
