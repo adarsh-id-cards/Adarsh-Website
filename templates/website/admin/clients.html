@@ -245,65 +245,112 @@
     cursor: not-allowed;
   }
 
-    .bridge-status-card {
+    /* Modal Styles */
+    .wa-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 20px;
+        animation: fadeIn 0.2s ease-out;
+    }
+    .wa-modal-overlay.show {
+        display: flex;
+    }
+    .wa-modal {
+        background: var(--wa-surface);
+        border-radius: 16px;
+        width: 100%;
+        max-width: 480px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .wa-modal-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--wa-border);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 12px;
-        padding: 12px 14px;
-        border: 1px solid var(--wa-border);
-        border-radius: 12px;
-        background: linear-gradient(180deg, var(--wa-surface), var(--wa-surface-soft));
+        background: var(--wa-surface-soft);
     }
-
-    .bridge-status-card strong {
+    .wa-modal-header h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--wa-text);
+        margin: 0;
+    }
+    .wa-modal-close {
+        background: transparent;
+        border: none;
+        color: var(--wa-muted);
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    .wa-modal-close:hover {
+        background: var(--color-gray-100);
+        color: var(--color-danger);
+    }
+    .wa-form-group {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--wa-border);
+    }
+    .wa-form-group:last-of-type {
+        border-bottom: none;
+    }
+    .wa-form-group label {
         display: block;
         font-size: 13px;
-        color: var(--wa-text);
-    }
-
-    .bridge-status-card span {
-        font-size: 12px;
-        color: var(--wa-muted);
-    }
-
-    .bridge-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-size: 12px;
         font-weight: 700;
-        white-space: nowrap;
+        color: var(--wa-text);
+        margin-bottom: 8px;
+    }
+    .wa-form-group input[type="text"],
+    .wa-form-group input[type="number"] {
+        width: 100%;
+        height: 40px;
+        padding: 0 12px;
+        border: 1px solid var(--wa-border);
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+    }
+    .wa-form-group input:focus {
+        outline: none;
+        border-color: var(--color-primary);
+    }
+    .wa-modal-footer {
+        padding: 18px 24px;
+        background: var(--wa-surface-soft);
+        border-top: 1px solid var(--wa-border);
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
     }
 
-    .bridge-pill.online {
-        background: color-mix(in srgb, var(--color-success, #16a34a) 14%, white 86%);
-        color: var(--color-success-dark, #166534);
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
-
-    .bridge-pill.offline {
-        background: color-mix(in srgb, var(--color-danger, #dc2626) 14%, white 86%);
-        color: var(--color-danger-dark, #991b1b);
+    @keyframes slideUp {
+        from { transform: translateY(10px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="panel-tab-content panel-tab-full-height email-panel-theme active wa-clients-panel">
-        <div class="bridge-status-card">
-                <div>
-                        <strong>Bridge Connection</strong>
-                        <span>{{ bridge_status.message|default:'Checking connection' }}</span>
-                </div>
-                <div class="bridge-pill {% if bridge_status.connected %}online{% else %}offline{% endif %}">
-                        {% if bridge_status.connected %}
-                        Connected{% else %}Disconnected{% endif %}
-                        {% if bridge_status.client_count %} · {{ bridge_status.client_count }} clients{% endif %}
-                </div>
-        </div>
     <div class="notif-actions-bar">
         <div class="notif-actions-left">
             <select id="clientStatusFilter" class="form-select form-select-sm" onchange="onClientStatusFilterChange(this.value)">
@@ -315,7 +362,13 @@
                 <i class="fa-solid fa-rotate-right"></i> Refresh
             </button>
         </div>
-        <div class="notif-actions-right"></div>
+        <div class="notif-actions-right">
+            {% if is_admin or is_pro or perm_website_add %}
+            <button class="btn btn-sm btn-primary" type="button" onclick="openAddClientModal()">
+                <i class="fa-solid fa-plus"></i> Add Client Logo
+            </button>
+            {% endif %}
+        </div>
     </div>
 
     <div class="notif-table-wrap">
@@ -339,8 +392,8 @@
                 <tr data-id="{{ c.id }}">
                     <td>
                         <div class="client-row-media">
-                            {% if c.website_logo %}
-                            <img src="{{ c.website_logo.url }}" class="client-logo-thumb" alt="{{ c.name }}">
+                            {% if c.logo %}
+                            <img src="{{ c.logo.url }}" class="client-logo-thumb" alt="{{ c.name }}">
                             {% else %}
                             <span class="client-logo-fallback"><i class="fa-solid fa-building"></i></span>
                             {% endif %}
@@ -350,7 +403,7 @@
                         </div>
                     </td>
                     <td>
-                        {% if is_super_admin or perm_website_edit %}
+                        {% if is_admin or is_pro or perm_website_edit %}
                         <input
                             type="number"
                             min="0"
@@ -365,7 +418,7 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% if is_super_admin or perm_website_edit %}
+                        {% if is_admin or is_pro or perm_website_edit %}
                         <select
                             class="form-select form-select-sm client-visibility-select status-{% if c.website_is_visible %}visible{% else %}hidden{% endif %}"
                             onchange="setClientWebsiteVisibility({{ c.id }}, this.value, this)">
@@ -379,15 +432,15 @@
                     <td>
                         <div class="client-logo-action-block">
                             <div class="client-logo-action-preview">
-                                {% if c.website_logo %}
-                                <img src="{{ c.website_logo.url }}" alt="{{ c.name }} logo">
+                                {% if c.logo %}
+                                <img src="{{ c.logo.url }}" alt="{{ c.name }} logo">
                                 {% else %}
                                 <span>No Logo</span>
                                 {% endif %}
                             </div>
                             <div class="client-logo-action-buttons">
-                                {% if is_super_admin or perm_website_edit %}
-                                    {% if c.website_logo %}
+                                {% if is_admin or is_pro or perm_website_edit %}
+                                {% if c.logo %}
                                     <button class="btn btn-sm btn-outline-primary" type="button" onclick="openUploadClientLogo({{ c.id }})">
                                         <i class="fa-solid fa-upload"></i> Upload New
                                     </button>
@@ -469,11 +522,7 @@
             <input type="hidden" id="clientId" value="">
             <div class="wa-form-group">
                 <label for="cl_name">Client Name</label>
-                <input type="text" id="cl_name" name="name" readonly>
-            </div>
-            <div class="wa-form-group">
-                <label for="cl_status">Panel Status</label>
-                <input type="text" id="cl_status" readonly>
+                <input type="text" id="cl_name" name="name" required placeholder="Enter client name...">
             </div>
             <div class="wa-form-group">
                 <label>Current Logo</label>

@@ -182,7 +182,7 @@
                 <span class="wa-count-badge">{{ total_reviews_count }} reviews</span>
             </div>
             <div class="wa-action-right">
-                {% if is_super_admin or perm_website_add %}
+                {% if is_admin or is_pro or perm_website_add %}
                 <button class="btn btn-primary" onclick="openReviewModal()">
                     <i class="fa-solid fa-plus"></i> Add Review
                 </button>
@@ -235,10 +235,10 @@
                     </span>
                 </td>
                 <td class="wa-actions">
-                    {% if is_super_admin or perm_website_edit %}
+                    {% if is_admin or is_pro or perm_website_edit %}
                     <button class="btn btn-neutral" title="Edit" onclick="editReview({{ r.id }})"><i class="fa-solid fa-pen"></i> Edit</button>
                     {% endif %}
-                    {% if is_super_admin or perm_website_delete %}
+                    {% if is_admin or is_pro or perm_website_delete %}
                     <button class="btn btn-danger" title="Delete" onclick="deleteReview({{ r.id }})"><i class="fa-solid fa-trash"></i> Delete</button>
                     {% endif %}
                 </td>

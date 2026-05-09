@@ -215,10 +215,6 @@ def _get_base_context(request, active_tab='business'):
     return perms
 
 
-def _bridge_status_context():
-    return WebsiteClientLogoService.bridge_status()
-
-
 # =============================================================================
 # PAGE VIEWS
 # =============================================================================
@@ -247,15 +243,14 @@ def business_details_page(request):
     context['website_status'] = WebsiteStatus.get_status()
     context['website_not_found_mode'] = SystemSettings.get_value('website_not_found_mode', 'false') == 'true'
     context['can_publish_website'] = PermissionService.has(request.user, 'perm_website_publish')
-    context['can_send_pro_access_link'] = PermissionService.is_pro_user(request.user)
+    context['can_send_pro_access_link'] = PermissionService.is_pro(request.user)
     return render(request, 'website/admin/business-details.html', context)
 
 
 @website_clients_read_required
 def clients_page(request):
-    """Website client logo management page (uses main Client records)."""
+    """Website client logo management page (local model)."""
     context = _get_base_context(request, 'clients')
-    context['bridge_status'] = _bridge_status_context()
 
     visibility_filter = (
         request.GET.get('visibility', '')
@@ -267,9 +262,9 @@ def clients_page(request):
 
     clients_qs = list(WebsiteClientLogoService.list_all())
     if visibility_filter == 'visible':
-        clients_qs = [c for c in clients_qs if bool(getattr(c, 'website_is_visible', False))]
+        clients_qs = [c for c in clients_qs if bool(c.website_is_visible)]
     elif visibility_filter == 'hidden':
-        clients_qs = [c for c in clients_qs if not bool(getattr(c, 'website_is_visible', False))]
+        clients_qs = [c for c in clients_qs if not bool(c.website_is_visible)]
 
     per_page_options = [10, 25, 50, 100]
     default_per_page = 25
@@ -303,10 +298,6 @@ def clients_page(request):
     return render(request, 'website/admin/clients.html', context)
 
 
-@website_view_required
-def api_bridge_status(request):
-    """Return bridge connectivity and configuration status for the clients UI."""
-    return JsonResponse({'success': True, 'bridge_status': _bridge_status_context()})
 
 
 @website_view_required
@@ -405,7 +396,7 @@ def api_website_status_summary(request):
         'success': True,
         'website_status': WebsiteStatus.get_status(),
         'website_not_found_mode': not_found_mode,
-        'can_send_pro_access_link': PermissionService.is_pro_user(request.user),
+        'can_send_pro_access_link': PermissionService.is_pro(request.user),
     })
 
 @require_POST
@@ -462,7 +453,7 @@ def api_send_pro_panel_access_link(request):
     Intended for emergency login support when website Not Found mode is active.
     """
     try:
-        if not PermissionService.is_pro_user(request.user):
+        if not PermissionService.is_pro(request.user):
             return JsonResponse(
                 {'success': False, 'message': 'Only Pro User can send emergency access links.'},
                 status=403,
@@ -545,12 +536,10 @@ def api_client_list(request):
     data = [{
         'id': c.id,
         'name': c.name,
-        'logo': c.website_logo.url if c.website_logo else None,
+        'logo': c.logo.url if c.logo else None,
         'website_is_visible': bool(c.website_is_visible),
         'website_display_order': int(c.website_display_order or 0),
         'website_visibility_display': 'Visible' if c.website_is_visible else 'Hidden',
-        'status': c.status,
-        'status_display': c.get_status_display(),
         'created_at': c.created_at.strftime('%Y-%m-%d') if c.created_at else '',
     } for c in qs]
     return JsonResponse({'success': True, 'clients': data})
@@ -559,32 +548,51 @@ def api_client_list(request):
 @require_POST
 @website_clients_manage_required
 def api_client_create(request):
-    """Clients are created from Manage Clients panel, not Website tab."""
-    return JsonResponse(
-        {'success': False, 'message': 'Create client from Manage Clients page.'},
-        status=400,
-    )
+    """Create a new website client logo."""
+    try:
+        name = request.POST.get('name', '').strip()
+        if not name:
+            return JsonResponse({'success': False, 'message': 'Name is required.'}, status=400)
+        
+        logo = request.FILES.get('logo')
+        if not logo:
+            return JsonResponse({'success': False, 'message': 'Logo image is required.'}, status=400)
+        
+        website_is_visible = _parse_bool(request.POST.get('website_is_visible', 'true'), True)
+        website_display_order = request.POST.get('website_display_order', 0)
+
+        client = WebsiteClientLogoService.create(
+            name=name,
+            logo=logo,
+            website_is_visible=website_is_visible,
+            website_display_order=website_display_order
+        )
+        ActivityService.log_website_update(request, f'client logo created: {name}')
+        return JsonResponse({'success': True, 'message': 'Client logo created', 'id': client.id})
+    except ValidationError as e:
+        return JsonResponse({'success': False, 'message': e.message}, status=400)
+    except Exception as e:
+        logging.getLogger(__name__).exception("Client create error: %s", e)
+        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.'}, status=500)
 
 
 @require_GET
 @website_clients_read_required
 def api_client_get(request, pk):
-    """Get a single panel client for logo edit modal."""
+    """Get a single client logo for edit modal."""
     try:
         c = WebsiteClientLogoService.get(pk)
     except Http404:
-        return JsonResponse({'success': False, 'message': 'Client not found'}, status=404)
+        return JsonResponse({'success': False, 'message': 'Client logo not found'}, status=404)
     return JsonResponse({
         'success': True,
         'client': {
             'id': c.id,
             'name': c.name,
-            'logo': c.website_logo.url if c.website_logo else None,
+            'logo': c.logo.url if c.logo else None,
             'website_is_visible': bool(c.website_is_visible),
             'website_display_order': int(c.website_display_order or 0),
             'website_visibility_display': 'Visible' if c.website_is_visible else 'Hidden',
-            'status': c.status,
-            'status_display': c.get_status_display(),
         }
     })
 
@@ -592,53 +600,44 @@ def api_client_get(request, pk):
 @require_POST
 @website_clients_manage_required
 def api_client_update(request, pk):
-    """Update website logo for a panel client."""
+    """Update an existing website client logo."""
     try:
+        name = request.POST.get('name')
         logo = request.FILES.get('logo')
-        remove_logo = _parse_bool(request.POST.get('remove_logo', 'false'))
-        visibility_raw = request.POST.get('website_is_visible', None)
-        website_is_visible = None
-        if visibility_raw is not None and str(visibility_raw).strip() != '':
-            website_is_visible = _parse_bool(visibility_raw)
+        visibility_raw = request.POST.get('website_is_visible')
+        order_raw = request.POST.get('website_display_order')
 
-        order_raw = request.POST.get('website_display_order', None)
-        website_display_order = None
-        if order_raw is not None and str(order_raw).strip() != '':
-            try:
-                website_display_order = int(str(order_raw).strip())
-            except (TypeError, ValueError):
-                return JsonResponse({'success': False, 'message': 'Display order must be a valid number.'}, status=400)
-
-            if website_display_order < 0:
-                return JsonResponse({'success': False, 'message': 'Display order cannot be negative.'}, status=400)
-            if website_display_order > 9999:
-                return JsonResponse({'success': False, 'message': 'Display order is too large.'}, status=400)
-
-        if logo is None and not remove_logo and website_is_visible is None and website_display_order is None:
-            return JsonResponse({'success': False, 'message': 'No changes submitted.'}, status=400)
-
-        WebsiteClientLogoService.update_logo(
+        WebsiteClientLogoService.update(
             pk,
+            name=name,
             logo=logo,
-            remove_logo=remove_logo,
-            website_is_visible=website_is_visible,
-            website_display_order=website_display_order,
+            website_is_visible=visibility_raw,
+            website_display_order=order_raw,
         )
+        ActivityService.log_website_update(request, f'client logo updated (ID: {pk})')
+        return JsonResponse({'success': True, 'message': 'Client settings updated'})
     except ValidationError as e:
         return JsonResponse({'success': False, 'message': e.message}, status=400)
     except Http404:
-        return JsonResponse({'success': False, 'message': 'Client not found'}, status=404)
-    return JsonResponse({'success': True, 'message': 'Client settings updated'})
+        return JsonResponse({'success': False, 'message': 'Client logo not found'}, status=404)
+    except Exception as e:
+        logging.getLogger(__name__).exception("Client update error: %s", e)
+        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.'}, status=500)
 
 
 @require_POST
 @website_clients_manage_required
 def api_client_delete(request, pk):
-    """Clients are deleted from Manage Clients panel, not Website tab."""
-    return JsonResponse(
-        {'success': False, 'message': 'Delete client from Manage Clients page.'},
-        status=400,
-    )
+    """Delete a website client logo."""
+    try:
+        WebsiteClientLogoService.delete(pk)
+        ActivityService.log_website_update(request, f'client logo deleted (ID: {pk})')
+        return JsonResponse({'success': True, 'message': 'Client logo deleted'})
+    except Http404:
+        return JsonResponse({'success': False, 'message': 'Client logo not found'}, status=404)
+    except Exception as e:
+        logging.getLogger(__name__).exception("Client delete error: %s", e)
+        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.'}, status=500)
 
 
 @require_POST

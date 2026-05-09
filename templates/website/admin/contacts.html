@@ -312,7 +312,7 @@
                             <a href="mailto:{{ c.email }}?subject=Re: {{ c.subject|urlencode }}" class="btn btn-icon" title="Reply via Email">
                                 <i class="fa-solid fa-reply"></i>
                             </a>
-                            {% if is_super_admin or perm_website_delete %}
+                            {% if is_admin or is_pro or perm_website_delete %}
                             <button class="btn btn-icon danger" title="Delete" onclick="deleteContact({{ c.id }})">
                                 <i class="fa-solid fa-trash"></i>
                             </button>

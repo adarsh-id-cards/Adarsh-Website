@@ -33,7 +33,7 @@ from django.utils.dateparse import parse_datetime
 from .models import (
     BusinessDetails, ContactSubmission, Feature,
     PortfolioCategory, PortfolioItem, Testimonial,
-    WebsiteStatus, FAQ,
+    WebsiteStatus, FAQ, WebsiteClientLogo,
 )
 
 logger = logging.getLogger(__name__)
@@ -329,224 +329,76 @@ class BusinessDetailsService:
 # =============================================================================
 
 class WebsiteClientLogoService:
-    """Manage website logos stored on the main Client model."""
-
-    @staticmethod
-    def _bridge_base_url():
-        return (os.getenv('PANEL_BRIDGE_BASE_URL') or '').strip().rstrip('/')
-
-    @staticmethod
-    def _bridge_token():
-        return (os.getenv('WEBSITE_BRIDGE_API_TOKEN') or '').strip()
-
-    @classmethod
-    def _bridge_timestamp_window_seconds(cls):
-        try:
-            return int(os.getenv('WEBSITE_BRIDGE_TIMESTAMP_WINDOW_SECONDS', '300').strip())
-        except Exception:
-            return 300
-
-    @classmethod
-    def _bridge_request_key(cls):
-        token = cls._bridge_token()
-        if not token:
-            raise ImproperlyConfigured('WEBSITE_BRIDGE_API_TOKEN is required for website bridge operations.')
-        return token.encode('utf-8')
-
-    @classmethod
-    def _bridge_require_config(cls):
-        if not cls._bridge_base_url():
-            raise ImproperlyConfigured('PANEL_BRIDGE_BASE_URL is required for website bridge operations.')
-        cls._bridge_request_key()
-
-    @classmethod
-    def _bridge_required(cls):
-        return bool(cls._bridge_base_url() and cls._bridge_token())
-
-    @classmethod
-    def _bridge_headers(cls):
-        return {
-            'Accept': 'application/json',
-            'X-Adarsh-Bridge-Token': cls._bridge_token(),
-        }
-
-    @classmethod
-    def _bridge_url(cls, path):
-        return urljoin(f"{cls._bridge_base_url()}/", path.lstrip('/'))
-
-    @classmethod
-    def _bridge_timeout(cls):
-        try:
-            return float(os.getenv('WEBSITE_BRIDGE_TIMEOUT_SECONDS', '12').strip())
-        except Exception:
-            return 12.0
-
-    @staticmethod
-    def _bridge_payload_hash(*, data=None, files=None):
-        lines = []
-        for key in sorted((data or {}).keys()):
-            if key in {'csrfmiddlewaretoken'}:
-                continue
-            lines.append(f'{key}={data.get(key)}')
-
-        for key in sorted((files or {}).keys()):
-            file_obj = files.get(key)
-            if file_obj is None:
-                continue
-            if isinstance(file_obj, tuple):
-                file_name = str(file_obj[0] or '')
-                raw = file_obj[1] if len(file_obj) > 1 else b''
-                content_type = str(file_obj[2] or '') if len(file_obj) > 2 else ''
-            else:
-                try:
-                    raw = file_obj.read()
-                finally:
-                    try:
-                        file_obj.seek(0)
-                    except Exception:
-                        pass
-                file_name = getattr(file_obj, 'name', '')
-                content_type = getattr(file_obj, 'content_type', '') or ''
-
-            if isinstance(raw, str):
-                raw = raw.encode('utf-8')
-            file_hash = hashlib.sha256(raw or b'').hexdigest()
-            lines.append(f'{key}:{file_name}:{content_type}:{file_hash}')
-
-        payload = '\n'.join(lines).encode('utf-8')
-        return hashlib.sha256(payload).hexdigest()
-
-    @classmethod
-    def _bridge_signature_headers(cls, method, path, *, data=None, files=None):
-        timestamp = str(int(time.time()))
-        canonical = '\n'.join([
-            timestamp,
-            str(method or 'GET').upper(),
-            path,
-            cls._bridge_payload_hash(data=data, files=files),
-        ])
-        signature = hmac.new(cls._bridge_request_key(), canonical.encode('utf-8'), hashlib.sha256).hexdigest()
-        return {
-            'Accept': 'application/json',
-            'X-Adarsh-Bridge-Token': cls._bridge_token(),
-            'X-Adarsh-Bridge-Timestamp': timestamp,
-            'X-Adarsh-Bridge-Signature': signature,
-        }
-
-    @classmethod
-    def _bridge_request(cls, method, path, *, data=None, files=None):
-        cls._bridge_require_config()
-        response = requests.request(
-            method=method,
-            url=cls._bridge_url(path),
-            headers=cls._bridge_signature_headers(method, path, data=data, files=files),
-            data=data,
-            files=files,
-            timeout=cls._bridge_timeout(),
-        )
-        try:
-            payload = response.json()
-        except ValueError as exc:
-            raise ValidationError('Bridge API returned invalid JSON.') from exc
-
-        if response.status_code >= 400 or payload.get('success') is False:
-            raise ValidationError(payload.get('message') or f'Bridge API request failed ({response.status_code}).')
-        return payload
-
-    @staticmethod
-    def _to_bridge_row(row):
-        logo_url = row.get('logo_url') or ''
-        created_at = parse_datetime(str(row.get('created_at') or ''))
-        return SimpleNamespace(
-            id=int(row.get('id', 0) or 0),
-            name=row.get('name') or '',
-            website_logo=SimpleNamespace(url=logo_url) if logo_url else None,
-            website_is_visible=bool(row.get('website_is_visible')),
-            website_display_order=int(row.get('website_display_order') or 0),
-            website_logo_cover_color=row.get('website_logo_cover_color'),
-            website_logo_cover_color_dark=row.get('website_logo_cover_color_dark'),
-            status=row.get('status') or '',
-            status_display=row.get('status_display') or '',
-            created_at=created_at,
-            get_status_display=lambda value=row.get('status_display') or '': value,
-        )
-
-    @classmethod
-    def bridge_status(cls):
-        base_url = cls._bridge_base_url()
-        token = cls._bridge_token()
-        configured = bool(base_url and token)
-        result = {
-            'configured': configured,
-            'required': True,
-            'connected': False,
-            'base_url': base_url,
-            'message': 'Bridge not configured' if not configured else '',
-            'client_count': 0,
-        }
-
-        if not configured:
-            result['message'] = 'Bridge not configured. Set PANEL_BRIDGE_BASE_URL and WEBSITE_BRIDGE_API_TOKEN.'
-            return result
-
-        try:
-            payload = cls._bridge_request('GET', '/api/bridge/clients/visible/')
-            clients = payload.get('clients', [])
-            result.update({
-                'connected': True,
-                'message': 'Bridge connected',
-                'client_count': len(clients),
-            })
-        except Exception as exc:
-            result['message'] = str(exc)
-        return result
+    """Manage website logos stored locally in WebsiteClientLogo model."""
 
     @staticmethod
     def list_all():
-        if not WebsiteClientLogoService._bridge_required():
-            return []
-        try:
-            payload = WebsiteClientLogoService._bridge_request('GET', '/api/bridge/clients/')
-            return [WebsiteClientLogoService._to_bridge_row(item) for item in payload.get('clients', [])]
-        except Exception as exc:
-            logger.debug("WebsiteClientLogoService.list_all bridge error: %s", exc)
-            return []
+        """Return all client logos ordered by display order."""
+        return WebsiteClientLogo.objects.all().order_by('website_display_order', '-created_at')
 
     @staticmethod
     def get(pk):
-        payload = WebsiteClientLogoService._bridge_request('GET', f'/api/bridge/clients/{pk}/')
-        return WebsiteClientLogoService._to_bridge_row(payload.get('client') or {})
+        """Return a single client logo or raise 404."""
+        return get_object_or_404(WebsiteClientLogo, pk=pk)
 
     @staticmethod
-    def update_logo(pk, *, logo=None, remove_logo=False, website_is_visible=None, website_display_order=None):
+    def create(*, name, logo, website_is_visible=True, website_display_order=0):
+        """Create a new client logo."""
         _validate_image_upload(logo, 'logo')
+        with transaction.atomic():
+            client_logo = WebsiteClientLogo.objects.create(
+                name=name,
+                logo=logo,
+                website_is_visible=_parse_bool(website_is_visible, True),
+                website_display_order=int(website_display_order or 0)
+            )
+        _invalidate_public_section_caches()
+        return client_logo
 
-        data = {
-            'remove_logo': 'true' if remove_logo else 'false',
+    @staticmethod
+    def update(pk, *, name=None, logo=None, website_is_visible=None, website_display_order=None):
+        """Update an existing client logo."""
+        if logo:
+            _validate_image_upload(logo, 'logo')
+        
+        with transaction.atomic():
+            client_logo = get_object_or_404(WebsiteClientLogo, pk=pk)
+            if name is not None:
+                client_logo.name = name
+            if logo is not None:
+                client_logo.logo = logo
+            if website_is_visible is not None:
+                client_logo.website_is_visible = _parse_bool(website_is_visible)
+            if website_display_order is not None:
+                client_logo.website_display_order = int(website_display_order)
+            client_logo.save()
+        _invalidate_public_section_caches()
+        return client_logo
+
+    @staticmethod
+    def delete(pk):
+        """Delete a client logo."""
+        with transaction.atomic():
+            client_logo = get_object_or_404(WebsiteClientLogo, pk=pk)
+            if client_logo.logo:
+                try:
+                    client_logo.logo.delete(save=False)
+                except Exception:
+                    logger.warning("Failed to delete logo file for WebsiteClientLogo %s", pk)
+            client_logo.delete()
+        _invalidate_public_section_caches()
+
+    @staticmethod
+    def bridge_status():
+        """Legacy method for UI compatibility - returns 'Local Mode' status."""
+        return {
+            'configured': True,
+            'required': False,
+            'connected': True,
+            'base_url': 'Local Database',
+            'message': 'Running in local mode (Bridge Removed)',
+            'client_count': WebsiteClientLogo.objects.count(),
         }
-        if website_is_visible is not None:
-            data['website_is_visible'] = 'true' if bool(website_is_visible) else 'false'
-        if website_display_order is not None:
-            data['website_display_order'] = str(website_display_order)
-
-        files = None
-        if logo is not None:
-            content_type = getattr(logo, 'content_type', None) or 'application/octet-stream'
-            files = {
-                'logo': (logo.name, logo.read(), content_type)
-            }
-            try:
-                logo.seek(0)
-            except Exception:
-                pass
-
-        payload = WebsiteClientLogoService._bridge_request(
-            'POST',
-            f'/api/bridge/clients/{pk}/update/',
-            data=data,
-            files=files,
-        )
-        return WebsiteClientLogoService._to_bridge_row(payload.get('client') or {})
 
 
 # =============================================================================

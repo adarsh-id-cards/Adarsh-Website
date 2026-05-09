@@ -19,31 +19,31 @@
                 </td>
                 <td class="action-cell">
                     <div class="action-buttons">
-                        {% if is_super_admin or perm_idcard_pending_list %}
+                        {% if is_admin or is_pro or perm_idcard_pending_list %}
                         <a href="{% if is_client or is_client_staff %}{% url 'client:idcard_actions' table.id %}{% else %}{% url 'idcard_actions' table.id %}{% endif %}?status=pending" class="list-btn pending-btn">
                             <i class="fa-solid fa-clock"></i> Pending
                             <span class="count-badge">{{ table.pending_count }}</span>
                         </a>
                         {% endif %}
-                        {% if is_super_admin or perm_idcard_verified_list %}
+                        {% if is_admin or is_pro or perm_idcard_verified_list %}
                         <a href="{% if is_client or is_client_staff %}{% url 'client:idcard_actions' table.id %}{% else %}{% url 'idcard_actions' table.id %}{% endif %}?status=verified" class="list-btn verified-btn">
                             <i class="fa-solid fa-circle-check"></i> Verified
                             <span class="count-badge">{{ table.verified_count }}</span>
                         </a>
                         {% endif %}
-                        {% if is_super_admin or perm_idcard_approved_list %}
+                        {% if is_admin or is_pro or perm_idcard_approved_list %}
                         <a href="{% if is_client or is_client_staff %}{% url 'client:idcard_actions' table.id %}{% else %}{% url 'idcard_actions' table.id %}{% endif %}?status=approved" class="list-btn approved-btn">
                             <i class="fa-solid fa-thumbs-up"></i> Approved
                             <span class="count-badge">{{ table.approved_count }}</span>
                         </a>
                         {% endif %}
-                        {% if is_super_admin or perm_idcard_download_list %}
+                        {% if is_admin or is_pro or perm_idcard_download_list %}
                         <a href="{% if is_client or is_client_staff %}{% url 'client:idcard_actions' table.id %}{% else %}{% url 'idcard_actions' table.id %}{% endif %}?status=download" class="list-btn download-btn">
                             <i class="fa-solid fa-download"></i> Downloaded
                             <span class="count-badge">{{ table.download_count }}</span>
                         </a>
                         {% endif %}
-                        {% if is_super_admin or perm_idcard_pool_list %}
+                        {% if is_admin or is_pro or perm_idcard_pool_list %}
                         <a href="{% if is_client or is_client_staff %}{% url 'client:idcard_actions' table.id %}{% else %}{% url 'idcard_actions' table.id %}{% endif %}?status=pool" class="list-btn pool-btn">
                             <i class="fa-solid fa-layer-group"></i> Pool
                             <span class="count-badge">{{ table.pool_count }}</span>
@@ -54,22 +54,22 @@
                 {% if not is_client and not is_client_staff or perm_idcard_bulk_reupload or perm_idcard_bulk_download or perm_delete_all_idcard or perm_idcard_upgrade_all %}
                 <td class="bulk-action-cell">
                     <div class="bulk-action-buttons">
-                        {% if is_super_admin or perm_idcard_bulk_reupload %}
+                        {% if is_admin or is_pro or perm_idcard_bulk_reupload %}
                         <button class="bulk-btn reupload-btn" data-action="reupload" data-table="{{ table.id }}" {% if total_count == 0 %}disabled title="No data in this table"{% endif %}>
                             <i class="fa-solid fa-upload"></i> Reupload Image
                         </button>
                         {% endif %}
-                        {% if is_super_admin or perm_idcard_bulk_download and not is_client and not is_client_staff %}
+                        {% if is_admin or is_pro or perm_idcard_bulk_download and not is_client and not is_client_staff %}
                         <button class="bulk-btn download-all-btn" data-action="download-all" data-table="{{ table.id }}" {% if total_count == 0 %}disabled title="No data in this table"{% endif %}>
                             <i class="fa-solid fa-id-card"></i> Download All ID Card
                         </button>
                         {% endif %}
-                        {% if is_super_admin or perm_delete_all_idcard %}
+                        {% if is_admin or is_pro or perm_delete_all_idcard %}
                         <button class="bulk-btn delete-all-btn" data-action="delete-all" data-table="{{ table.id }}" {% if total_count == 0 %}disabled title="No data in this table"{% endif %}>
                             <i class="fa-solid fa-trash"></i> Delete All ID Cards
                         </button>
                         {% endif %}
-                        {% if is_super_admin or perm_idcard_upgrade_all %}
+                        {% if is_admin or is_pro or perm_idcard_upgrade_all %}
                         <button class="bulk-btn upgrade-class-btn" data-action="upgrade" data-table="{{ table.id }}" {% if not table.has_class_field or total_count == 0 %}disabled title="{% if not table.has_class_field %}No class column in this table{% else %}No data in this table{% endif %}"{% endif %}>
                             <i class="fa-solid fa-arrow-up"></i> Upgrade All Class
                         </button>

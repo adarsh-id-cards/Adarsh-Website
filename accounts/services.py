@@ -28,25 +28,23 @@ User = get_user_model()
 
 # Role mapping - Maps frontend role names to User model role values
 ROLE_MAPPING = {
-    'pro_user': 'pro_user',
-    'super_admin': 'super_admin',
-    'admin_staff': 'admin_staff',
+    'admin': 'admin',
+    'pro': 'pro',
+    'operator': 'operator',
 }
 
 # Group names for Django Groups
 GROUP_NAMES = {
-    'pro_user': 'PRO_USER',
-    'super_admin': 'SUPER_ADMIN',
-    'admin_staff': 'ADMIN_STAFF',
+    'admin': 'ADMIN',
+    'pro': 'PRO',
+    'operator': 'OPERATOR',
 }
 
 # Dashboard redirect URLs based on role
-# pro_user, super_admin & admin_staff → main dashboard at /panel/
-# client & client_staff → client dashboard at /panel/client/dashboard/
 DASHBOARD_URLS = {
-    'pro_user': '/panel/',
-    'super_admin': '/panel/',
-    'admin_staff': '/panel/',
+    'admin': '/panel/',
+    'pro': '/panel/',
+    'operator': '/panel/',
 }
 
 # OTP settings
@@ -65,9 +63,9 @@ MAX_CONCURRENT_SESSIONS = int(os.getenv('MAX_CONCURRENT_SESSIONS', '5'))
 DEV_LOG_OTP = os.getenv('DEV_LOG_OTP', 'false').strip().lower() in ('1', 'true', 'yes', 'on')
 
 _ROLE_SURFACE_LIMITS = {
-    'admin_staff': {'desktop': 9999, 'mobile': 9999},
-    'super_admin': {'desktop': 9999, 'mobile': 9999},
-    'pro_user': {'desktop': 9999, 'mobile': 9999},
+    'admin': {'desktop': 9999, 'mobile': 9999},
+    'pro': {'desktop': 9999, 'mobile': 9999},
+    'operator': {'desktop': 9999, 'mobile': 9999},
 }
 
 
@@ -506,13 +504,6 @@ class AuthService:
     def _find_user(identifier, role=None):
         """
         Find a user by email, username, or phone, with optional role filter.
-
-        Args:
-            identifier: Email address, username, or phone number
-            role: Optional role to filter by
-
-        Returns:
-            User instance or None
         """
         from django.db.models import Q
         if not identifier:
@@ -520,8 +511,8 @@ class AuthService:
 
         role_filter = Q()
         if role and role in ROLE_MAPPING:
-            if role == 'super_admin':
-                role_filter = Q(role__in=['super_admin', 'pro_user'])
+            if role == 'admin':
+                role_filter = Q(role__in=['admin', 'pro'])
             else:
                 role_filter = Q(role=role)
 
@@ -560,24 +551,12 @@ class AuthService:
         active_candidates = [c for c in candidates if c.is_active]
         if len(active_candidates) == 1:
             return active_candidates[0]
-        # Still ambiguous — log warning and return None for safety
-        logger.warning(
-            "Ambiguous phone login: %d users share phone digits ***%s (active: %d)",
-            len(candidates), normalized_identifier[-4:], len(active_candidates),
-        )
         return None
 
     @staticmethod
     def check_user_exists(identifier, role=None):
         """
         Check login preflight without disclosing whether an account exists.
-
-        Args:
-            identifier: User's email address or username
-            role: Optional role to filter by
-
-        Returns:
-            dict: response safe for unauthenticated clients
         """
         try:
             identifier = _normalize_identifier(identifier)
@@ -623,14 +602,13 @@ class AuthService:
 
     @staticmethod
     def _maybe_notify_failed_login(user, identifier: str, attempts: int) -> None:
-        """Send best-effort suspicious login notification without changing API responses."""
+        """Send best-effort suspicious login notification."""
         if not user or not getattr(user, 'email', ''):
             return
         if attempts < max(1, AUTH_FAIL_NOTIFY_THRESHOLD):
             return
 
         notify_key = _auth_fail_notify_cache_key(identifier)
-        # cache.add => notify only once per cooldown window.
         try:
             should_notify = cache.add(notify_key, 1, AUTH_FAIL_NOTIFY_COOLDOWN_SECONDS)
         except Exception:
@@ -668,19 +646,10 @@ class AuthService:
     @staticmethod
     def authenticate_user(identifier, password, role=None):
         """
-        Authenticate user with email/username and password.
-
-        Args:
-            identifier: User's email or username
-            password: User's password
-            role: Expected role (optional)
-
-        Returns:
-            dict: {success: bool, user: User, redirect_url: str, message: str}
+        Authenticate user locally with email/username and password.
         """
         try:
             identifier = _normalize_identifier(identifier)
-
             _AUTH_FAIL_MSG = 'Invalid credentials. Please try again.'
 
             if not identifier or len(identifier) > 254:
@@ -697,7 +666,7 @@ class AuthService:
 
             # Check role if specified
             if role and user.role != role:
-                if not (role == 'super_admin' and user.role == 'pro_user'):
+                if not (role == 'admin' and user.role == 'pro'):
                     attempts = AuthService._record_login_failure(identifier)
                     AuthService._maybe_notify_failed_login(user, identifier, attempts)
                     return {'success': False, 'message': _AUTH_FAIL_MSG}
@@ -707,15 +676,13 @@ class AuthService:
                 AuthService._maybe_notify_failed_login(user, identifier, attempts)
                 return {'success': False, 'message': _AUTH_FAIL_MSG}
 
-            # Normalize password input (phone formats -> digits, text -> intact)
+            # Normalize password input
             normalized_password = normalize_password_input(password)
 
             authenticated_user = authenticate(username=user.username, password=normalized_password)
 
             if authenticated_user is None:
-                # Fallback: direct password check
                 if user.check_password(normalized_password):
-                    # Set backend attribute required by django.contrib.auth.login()
                     user.backend = 'django.contrib.auth.backends.ModelBackend'
                     authenticated_user = user
                 else:
@@ -735,6 +702,7 @@ class AuthService:
             }
 
         except Exception as e:
+            logger.exception("Auth error: %s", e)
             return {
                 'success': False,
                 'message': 'An authentication error occurred. Please try again.'
@@ -744,8 +712,8 @@ class AuthService:
     def get_dashboard_url(user):
         """Get the appropriate dashboard URL for a user based on their role."""
         from core.services.permission_service import PermissionService
-        if PermissionService.is_super_admin(user):
-            return DASHBOARD_URLS['super_admin']
+        if PermissionService.is_admin(user):
+            return DASHBOARD_URLS['admin']
         return DASHBOARD_URLS.get(user.role, '/panel/')
 
 

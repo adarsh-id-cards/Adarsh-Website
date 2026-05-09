@@ -9,7 +9,7 @@
         <input type="text" id="notifSearch" placeholder="Search notifications..." oninput="debounceSearch()">
       </div>
       <div class="notif-actions-left-buttons">
-        {% if is_super_admin %}
+        {% if is_admin or is_pro %}
         <button class="btn btn-sm btn-danger" type="button" id="mtQuickToggleBtn" onclick="openMaintenanceModeModal()">
           <i class="fa-solid fa-power-off"></i> Enable Maintenance
         </button>
@@ -38,7 +38,7 @@
       <span class="notif-inline-stat-badge" title="Urgent">
         <i class="fa-solid fa-triangle-exclamation"></i> <span id="statUrgent">0</span>
       </span>
-      {% if is_super_admin %}
+      {% if is_admin or is_pro %}
       <span class="notif-maintenance-status" id="mtQuickStatusBadge">Maintenance: Inactive</span>
       <span class="notif-domain-status" id="domainNotFoundQuickBadge">Domain Mode: Off</span>
       {% endif %}
@@ -107,7 +107,7 @@
     </div>
   </div>
 
-  {% if is_super_admin %}
+  {% if is_admin or is_pro %}
   <div class="center-modal-overlay center-modal-theme-blue" id="domainNotFoundModal" style="display:none;">
     <div class="center-modal-card domain-not-found-modal-card" @click.stop>
       <div class="center-modal-header">

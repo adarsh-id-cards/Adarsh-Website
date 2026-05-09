@@ -107,46 +107,16 @@
                     <i class="fa-solid fa-bars" :class="sidebarToggleIconClass"></i>
                 </button>
                 <div class="breadcrumb">
-                    {% if is_super_admin %}
+                    {% if is_admin or is_pro or is_operator %}
                     <a href="{% url 'dashboard' %}" class="breadcrumb-item"><i class="fa-solid fa-house"></i> Home</a>
-                    {% elif is_admin_staff %}
-                    <a href="{% url 'admin_staff_dashboard' %}" class="breadcrumb-item"><i class="fa-solid fa-house"></i> Home</a>
                     {% endif %}
                     <i class="fa-solid fa-chevron-right breadcrumb-sep"></i>
-                    <a href="{% url 'manage_website:dashboard' %}" class="breadcrumb-item {% if active_tab == 'business' %}active{% endif %}">Website</a>
+                    <a href="{% url 'manage_website:dashboard' %}" class="breadcrumb-item">Website</a>
                     {% block breadcrumb_extra %}{% endblock %}
                 </div>
             </div>
         </header>
 
-        <!-- Tab Navigation -->
-        <div class="wa-tabs">
-            {% if is_super_admin or perm_website_view %}
-            <a href="{% url 'manage_website:business' %}" class="wa-tab {% if active_tab == 'business' %}active{% endif %}">
-                <i class="fa-solid fa-building"></i> Business
-            </a>
-            {% endif %}
-            {% if is_super_admin or perm_website_view %}
-            <a href="{% url 'manage_website:portfolio' %}" class="wa-tab {% if active_tab == 'portfolio' %}active{% endif %}">
-                <i class="fa-solid fa-images"></i> Portfolio
-            </a>
-            {% endif %}
-            {% if is_super_admin or perm_website_view %}
-            <a href="{% url 'manage_website:contacts' %}" class="wa-tab {% if active_tab == 'contacts' %}active{% endif %}">
-                <i class="fa-solid fa-envelope"></i> Messages
-            </a>
-            {% endif %}
-            {% if is_super_admin or perm_website_view %}
-            <a href="{% url 'manage_website:clients' %}" class="wa-tab {% if active_tab == 'clients' %}active{% endif %}">
-                <i class="fa-solid fa-handshake"></i> Clients
-            </a>
-            {% endif %}
-            {% if is_super_admin or perm_website_view %}
-            <a href="{% url 'manage_website:reviews' %}" class="wa-tab {% if active_tab == 'reviews' %}active{% endif %}">
-                <i class="fa-solid fa-star"></i> Reviews
-            </a>
-            {% endif %}
-        </div>
 
         <!-- Page Content -->
         <div class="main-content">
@@ -202,7 +172,7 @@
         </div>
     </div>
 
-    <!-- Core JS bundle (api + toast + modal + utils + init + global-search + notification-bell) -->
+    <!-- Core JS bundle (api + toast + modal + utils + init + global-search) -->
     <script src="{% static 'dist/js/core.min.js' %}"></script>
     <script defer src="{% static 'js/core/unified-select-dropdown.js' %}"></script>
     <script defer src="{% static 'js/core/icon-button-text.js' %}"></script>

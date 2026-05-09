@@ -8,32 +8,35 @@ def office_work_shared_file_upload_to(instance, filename):
 
 class CustomUserManager(UserManager):
     def create_superuser(self, username, email=None, password=None, **extra_fields):
-        extra_fields.setdefault('role', 'super_admin')
+        extra_fields.setdefault('role', 'admin')
         return super().create_superuser(username, email, password, **extra_fields)
 
 class User(AbstractUser):
     ROLE_CHOICES = [
-        ('pro_user', 'Pro User'),
-        ('super_admin', 'Super Admin'),
-        ('admin_staff', 'Admin Staff'),
+        ('admin', 'Admin'),
+        ('pro', 'Pro'),
+        ('operator', 'Operator'),
     ]
     phone = models.CharField(max_length=15, blank=True, null=True)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='admin_staff', db_index=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='operator', db_index=True)
     welcome_email_sent = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = CustomUserManager()
 
     def save(self, *args, **kwargs):
-        if self.role == 'pro_user':
-            self.is_superuser = self.is_staff = True
-        elif self.is_superuser:
-            self.role = 'super_admin'
+        # Admin and Pro have full staff/superuser access by default
+        if self.role in ('admin', 'pro') or self.is_superuser:
             self.is_staff = True
-        elif self.role == 'super_admin':
-            self.is_superuser = self.is_staff = True
+            if self.role == 'admin':
+                self.is_superuser = True
+            else:
+                self.is_superuser = False
         else:
+            # Operators are staff but not superusers
+            self.is_staff = True
             self.is_superuser = False
+            
         super().save(*args, **kwargs)
 
 class WebsiteSettings(models.Model):

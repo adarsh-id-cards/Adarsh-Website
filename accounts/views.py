@@ -154,7 +154,7 @@ class ImpersonateListAPIView(LoginRequiredMixin, View):
 
 class ProUserAuditUsersAPIView(LoginRequiredMixin, View):
     def get(self, request):
-        if request.user.role != 'pro_user': return JsonResponse({'success': False}, status=403)
+        if request.user.role != 'pro': return JsonResponse({'success': False}, status=403)
         users = User.objects.all().order_by('username')
         return JsonResponse({'success': True, 'users': [{'id': u.id, 'username': u.username, 'role': u.role} for u in users]})
 

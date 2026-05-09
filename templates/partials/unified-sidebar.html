@@ -18,11 +18,11 @@
   </div>
   <nav aria-label="Main navigation">
     <!-- Dashboard - Role-based redirect -->
-    {% if is_super_admin %}
+    {% if is_admin or is_pro %}
     <a href="{% url 'dashboard' %}" class="{% if active_page == 'dashboard' %}active{% endif %}">
       <i class="fa-solid fa-house"></i><span>Dashboard</span>
     </a>
-    {% elif is_admin_staff %}
+    {% elif is_operator %}
     <a href="{% url 'admin_staff_dashboard' %}" class="{% if active_page == 'dashboard' %}active{% endif %}">
       <i class="fa-solid fa-house"></i><span>Dashboard</span>
     </a>
@@ -36,14 +36,14 @@
     </a>
     {% endif %}
     
-    {% if is_super_admin or is_admin_staff %}
+    {% if is_admin or is_pro or is_operator %}
     <!-- Super Admin / Operator Menu -->
     <div class="nav-section">
       <div class="nav-section-line"></div>
       <span class="nav-section-title">User Management</span>
       <div class="nav-section-line"></div>
     </div>
-    {% if is_super_admin %}
+    {% if is_admin or is_pro %}
     <a href="{% url 'manage_staff' %}" class="{% if active_page == 'manage_staff' %}active{% endif %}">
       <i class="fa-solid fa-user-tie"></i><span>Manage Operator</span>
     </a>
@@ -83,7 +83,7 @@
     {% endif %}
     {% endif %}
 
-    {% if is_super_admin or is_admin_staff %}
+    {% if is_admin or is_pro or is_operator %}
     <!-- Services Dropdown  -  Admin & Operator only -->
     <div class="nav-section">
       <div class="nav-section-line"></div>

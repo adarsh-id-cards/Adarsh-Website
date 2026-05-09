@@ -7,7 +7,7 @@
       <span>Notifications</span>
       <span class="notif-bar-badge" id="notifBarCount" style="display:none;">0</span>
     </div>
-    <a href="{% url 'notifications_page' %}" class="notif-bar-link">
+    <a href="#" class="notif-bar-link">
       Open Notifications
     </a>
   </div>
@@ -178,7 +178,7 @@
 
 <script>
 (function() {
-  const notificationsPageUrl = "{% url 'notifications_page' %}";
+  const notificationsPageUrl = "#";
 
   function loadNotifBar() {
     fetch('/api/notifications/list/?limit=5&unread_only=true')

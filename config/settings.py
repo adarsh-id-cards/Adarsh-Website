@@ -223,7 +223,8 @@ ASGI_APPLICATION = 'config.asgi.application'
 
 
 if DEBUG:
-    INTERNAL_IPS = ['127.0.0.1', 'localhost']
+    _internal_ips = os.getenv('INTERNAL_IPS', '127.0.0.1,localhost')
+    INTERNAL_IPS = [ip.strip() for ip in _internal_ips.split(',') if ip.strip()]
 
     def _debug_toolbar_show_toolbar(request):
         host = (request.get_host() or '').split(':')[0].lower()
@@ -428,9 +429,10 @@ CSRF_COOKIE_SAMESITE = 'Lax'           # CSRF cookie SameSite
 SESSION_SAVE_EVERY_REQUEST = True
 
 # ── Domain restriction ──
-# REMOVE any existing domain overrides to prevent duplicate cookies
-CSRF_COOKIE_DOMAIN = None
-SESSION_COOKIE_DOMAIN = None
+# Set to the parent domain (e.g. .example.com) so cookies work across subdomains.
+# REQUIRED when using subdomain routing (WEBSITE_DOMAIN + PANEL_DOMAIN).
+CSRF_COOKIE_DOMAIN = os.getenv('CSRF_COOKIE_DOMAIN')
+SESSION_COOKIE_DOMAIN = os.getenv('SESSION_COOKIE_DOMAIN')
 
 # ── Session idle timeout (seconds) ──
 # If a user has no requests for this period, session expires on next request.

@@ -18,7 +18,7 @@
         {% if can_manage_clients %}
         <button class="btn btn-md btn-neutral" id="viewStaffBtn" disabled><i class="fa-solid fa-users"></i> Staff</button>
         {% endif %}
-        {% if is_super_admin %}
+        {% if is_admin or is_pro %}
         <button class="btn btn-md btn-danger" id="deleteClientBtn" disabled><i class="fa-solid fa-trash"></i> Delete</button>
         {% endif %}
         {% if can_manage_clients %}
@@ -26,7 +26,7 @@
         {% endif %}
     </div>
 
-    {% if is_super_admin or perm_idcard_setting_list %}
+    {% if is_admin or is_pro or perm_idcard_setting_list %}
     <div class="btn-separator"></div>
     <div class="btn-group">
         <button class="btn btn-md btn-neutral" id="group-setting-btn" disabled title="Manage Group Settings">

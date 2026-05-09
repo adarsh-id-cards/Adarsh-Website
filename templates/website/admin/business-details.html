@@ -461,7 +461,7 @@
         <!-- Basic Info -->
         <div class="wa-form-group-title wa-section-bar">
             <span class="wa-section-bar-left"><i class="fa-solid fa-circle-info"></i> Basic Info</span>
-            {% if is_super_admin or perm_website_edit %}
+            {% if is_admin or is_pro or perm_website_edit %}
             <span class="wa-section-bar-actions">
                 <button type="button" class="btn btn-primary btn-sm wa-section-save-btn" data-fields="site_name,tagline">
                     <i class="fa-solid fa-save"></i> Save Changes
@@ -483,7 +483,7 @@
         <!-- Contact Info -->
         <div class="wa-form-group-title wa-section-bar">
             <span class="wa-section-bar-left"><i class="fa-solid fa-phone"></i> Contact Info</span>
-            {% if is_super_admin or perm_website_edit %}
+            {% if is_admin or is_pro or perm_website_edit %}
             <span class="wa-section-bar-actions">
                 <button type="button" class="btn btn-primary btn-sm wa-section-save-btn" data-fields="email,phone1,phone2,address">
                     <i class="fa-solid fa-save"></i> Save Changes
@@ -518,7 +518,7 @@
         <!-- Social Links -->
         <div class="wa-form-group-title wa-section-bar">
             <span class="wa-section-bar-left"><i class="fa-solid fa-share-nodes"></i> Social Links</span>
-            {% if is_super_admin or perm_website_edit %}
+            {% if is_admin or is_pro or perm_website_edit %}
             <span class="wa-section-bar-actions">
                 <button type="button" class="btn btn-primary btn-sm wa-section-save-btn" data-fields="facebook_url,instagram_url,linkedin_url,youtube_url">
                     <i class="fa-solid fa-save"></i> Save Changes
@@ -551,7 +551,7 @@
         <!-- Active Toggle -->
         <div class="wa-form-group-title wa-section-bar">
             <span class="wa-section-bar-left"><i class="fa-solid fa-power-off"></i> Visibility Preference</span>
-            {% if is_super_admin or perm_website_edit %}
+            {% if is_admin or is_pro or perm_website_edit %}
             <span class="wa-section-bar-actions">
                 <button type="button" class="btn btn-primary btn-sm wa-section-save-btn" data-fields="is_active">
                     <i class="fa-solid fa-save"></i> Save Changes

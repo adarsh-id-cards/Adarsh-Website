@@ -101,7 +101,7 @@
         </div>
         {% endif %}
         <div class="filter-group">
-            {% if is_super_admin or is_admin_staff %}
+            {% if is_admin or is_pro or is_operator %}
             <a href="{% url 'idcard_group' client_id=client.id %}" class="btn btn-settings" title="Back to ID Card Group">
                 <i class="fa-solid fa-layer-group"></i> ID Card Group
             </a>

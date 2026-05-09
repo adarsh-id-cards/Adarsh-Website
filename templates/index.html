@@ -71,7 +71,7 @@
   {% include 'partials/dashboard/delete-modal.html' %}
   {% include 'partials/dashboard/upgrade-modal.html' %}
   {% include 'partials/dashboard/reupload-modal.html' %}
-  {% if is_super_admin or perm_idcard_client_list %}
+  {% if is_admin or is_pro or perm_idcard_client_list %}
   {% include 'partials/client/group-message-drawer.html' %}
   {% endif %}
 

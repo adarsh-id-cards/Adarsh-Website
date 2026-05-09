@@ -56,8 +56,7 @@
           <span>Search ID cards...</span>
           <kbd>Ctrl+K</kbd>
         </button>
-        {% include 'partials/notification-bell.html' %}
-      </div>
+          </div>
       {% endblock %}
     </header>
 
@@ -144,11 +143,10 @@
     };
   </script>
 
-  <!-- Core JS bundle (api + toast + modal + utils + sanitizer + confirmation-code + download-manager + init + global-search + notification-bell) -->
+  <!-- Core JS bundle (api + toast + modal + utils + sanitizer + confirmation-code + download-manager + init + global-search) -->
   <script defer src="{% static 'dist/js/core.min.js' %}"></script>
   <script defer src="{% static 'js/core/realtime-service.js' %}"></script>
   <script defer src="{% static 'js/core/unified-select-dropdown.js' %}"></script>
-  <script defer src="{% static 'js/live-client-presence.js' %}"></script>
   <script defer src="{% static 'js/core/icon-button-text.js' %}"></script>
   <script defer src="{% static 'js/core/icon-consistency.js' %}"></script>
 

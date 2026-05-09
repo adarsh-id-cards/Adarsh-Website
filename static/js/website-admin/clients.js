@@ -1,11 +1,11 @@
 /**
- * Website Admin  Clients Module
- * Logo updates for panel clients (names/details managed from Manage Clients)
+ * Website Admin - Clients Module
+ * Manages local website client logos (Decoupled from legacy bridge)
  */
 (function () {
-    const BASE = '/website/api';
+    const BASE = '/dashboard/api';
 
-    /* ===== MODAL ===== */
+    /* ===== UI HELPERS ===== */
 
     function setLogoPreview(logoUrl) {
         const preview = document.getElementById('cl_logo_preview');
@@ -23,17 +23,31 @@
         selectEl.classList.add(value === 'visible' ? 'status-visible' : 'status-hidden');
     }
 
-    window.openClientModal = function (id) {
+    /* ===== MODAL ACTIONS ===== */
+
+    window.openAddClientModal = function () {
+        document.getElementById('clientModalTitle').textContent = 'Add Client Logo';
+        document.getElementById('clientForm').reset();
+        document.getElementById('clientId').value = '';
+        setLogoPreview('');
+        
+        if (window.ModalManager) {
+            window.ModalManager.register('clientModal', { overlayClass: 'show' });
+            window.ModalManager.open('clientModal');
+        } else {
+            document.getElementById('clientModal').classList.add('show');
+        }
+    };
+
+    window.openUploadClientLogo = function (id) {
         if (!id) {
-            showToast('Client not found.', 'error');
+            showToast('Client ID required.', 'error');
             return;
         }
 
-        document.getElementById('clientModalTitle').textContent = 'Upload Client Logo';
+        document.getElementById('clientModalTitle').textContent = 'Update Client Logo';
         document.getElementById('clientForm').reset();
         document.getElementById('clientId').value = String(id);
-        document.getElementById('cl_name').value = '';
-        document.getElementById('cl_status').value = '';
         setLogoPreview('');
 
         ApiClient.get(`${BASE}/clients/${id}/`)
@@ -44,31 +58,29 @@
                 }
                 const c = d.client;
                 document.getElementById('cl_name').value = c.name || '';
-                document.getElementById('cl_status').value = c.status_display || c.status || '';
                 setLogoPreview(c.logo || '');
-                document.getElementById('clientModalTitle').textContent = c.logo ? 'Upload New Client Logo' : 'Upload Client Logo';
             })
             .catch(() => {
                 showToast('Network error', 'error');
             });
 
-        if (window.AdarshModalBridge && typeof window.AdarshModalBridge.open === 'function') {
-            window.AdarshModalBridge.open('clientModal', { overlayClass: 'show' });
+        if (window.ModalManager) {
+            window.ModalManager.register('clientModal', { overlayClass: 'show' });
+            window.ModalManager.open('clientModal');
         } else {
             document.getElementById('clientModal').classList.add('show');
         }
     };
 
     window.closeClientModal = function () {
-        if (window.AdarshModalBridge && typeof window.AdarshModalBridge.close === 'function') {
-            window.AdarshModalBridge.close('clientModal', { overlayClass: 'show' });
+        if (window.ModalManager) {
+            window.ModalManager.close('clientModal');
         } else {
             document.getElementById('clientModal').classList.remove('show');
         }
     };
 
-    window.editClient = function (id) { openClientModal(id); };
-    window.openUploadClientLogo = function (id) { openClientModal(id); };
+    /* ===== CRUD ACTIONS ===== */
 
     window.removeClientLogo = async function (id, clientName) {
         if (!id) return;
@@ -76,27 +88,24 @@
         let ok = false;
         if (typeof waConfirm === 'function') {
             ok = await waConfirm({
-                title: 'Remove Client Logo?',
-                text: `Logo for ${clientName || 'this client'} will be removed from website assets.`,
+                title: 'Delete Client Logo?',
+                text: `Are you sure you want to delete ${clientName || 'this client'}? This action cannot be undone.`,
                 icon: 'fa-solid fa-trash',
-                confirmLabel: 'Remove',
+                confirmLabel: 'Delete',
                 btnClass: 'btn-danger',
             });
         } else {
-            ok = window.confirm('Remove this client logo?');
+            ok = window.confirm(`Delete logo for ${clientName}?`);
         }
         if (!ok) return;
 
-        const fd = new FormData();
-        fd.set('remove_logo', 'true');
-
-        ApiClient.upload(`${BASE}/clients/${id}/update/`, fd)
+        ApiClient.post(`${BASE}/clients/${id}/delete/`, {})
             .then(d => {
                 if (d.success) {
-                    showToast('Logo removed', 'success');
+                    showToast('Client logo deleted', 'success');
                     window.location.reload();
                 } else {
-                    showToast(d.message || 'Could not remove logo', 'error');
+                    showToast(d.message || 'Could not delete logo', 'error');
                 }
             })
             .catch(() => showToast('Network error', 'error'));
@@ -115,7 +124,7 @@
             .then(d => {
                 if (d.success) {
                     selectEl.dataset.current = newValue;
-                    showToast(`Client is now ${newValue} on landing page.`, 'success');
+                    showToast(`Visibility updated to ${newValue}.`, 'success');
                 } else {
                     selectEl.value = previous;
                     setVisibilitySelectTheme(selectEl, previous);
@@ -152,7 +161,7 @@
             .then(d => {
                 if (d.success) {
                     inputEl.dataset.currentOrder = String(parsed);
-                    showToast('Landing order updated.', 'success');
+                    showToast('Display order updated.', 'success');
                 } else {
                     inputEl.value = Number.isInteger(previous) ? String(previous) : '0';
                     showToast(d.message || 'Could not update order', 'error');
@@ -167,36 +176,57 @@
             });
     };
 
-    /* ===== FORM SUBMIT ===== */
+    /* ===== FORM SUBMIT (ADD / UPDATE) ===== */
     document.getElementById('clientForm').addEventListener('submit', function (e) {
         e.preventDefault();
         const id = document.getElementById('clientId').value;
-        if (!id) {
-            showToast('Client ID missing.', 'error');
-            return;
-        }
-
-        const selectedLogo = document.getElementById('cl_logo').files;
-        if (!selectedLogo || selectedLogo.length === 0) {
-            showToast('Please select a logo image to upload.', 'error');
+        const name = document.getElementById('cl_name').value.trim();
+        const logoInput = document.getElementById('cl_logo');
+        
+        if (!name) {
+            showToast('Client name is required.', 'error');
             return;
         }
 
         const fd = new FormData();
-        fd.set('logo', selectedLogo[0]);
+        fd.set('name', name);
+        if (logoInput.files.length > 0) {
+            fd.set('logo', logoInput.files[0]);
+        } else if (!id) {
+            showToast('Please select a logo image.', 'error');
+            return;
+        }
 
-        const url = `${BASE}/clients/${id}/update/`;
+        const url = id ? `${BASE}/clients/${id}/update/` : `${BASE}/clients/create/`;
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalHtml = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
         ApiClient.upload(url, fd)
             .then(d => {
-                if (d.success) { showToast(d.message, 'success'); location.reload(); }
-                else showToast(d.message || 'Error', 'error');
+                if (d.success) {
+                    showToast(d.message, 'success');
+                    window.location.reload();
+                } else {
+                    showToast(d.message || 'Error saving client', 'error');
+                }
             })
-            .catch(() => showToast('Network error', 'error'));
+            .catch(() => showToast('Network error', 'error'))
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHtml;
+            });
     });
 
+    /* ===== INIT ===== */
     document.querySelectorAll('.client-visibility-select').forEach(function (selectEl) {
         const current = selectEl.value === 'visible' ? 'visible' : 'hidden';
         selectEl.dataset.current = current;
         setVisibilitySelectTheme(selectEl, current);
     });
+
+    // Make sure old function names used in templates work
+    window.editClient = function (id) { openUploadClientLogo(id); };
 })();

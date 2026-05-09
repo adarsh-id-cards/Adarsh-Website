@@ -60,7 +60,7 @@
           </div>
 
           <!-- Permissions Section (read-only) -->
-          {% if is_super_admin %}
+          {% if is_admin or is_pro %}
           <div class="form-section" id="viewPermissionsSection">
             <div class="section-title"><i class="fa-solid fa-shield-halved"></i> Permissions</div>
             <div id="viewPermissionsGrid" class="permissions-section">

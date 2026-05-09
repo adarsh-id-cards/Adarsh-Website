@@ -1,7 +1,11 @@
-{% extends "website/admin/base.html" %}
+{% extends "base.html" %}
 {% load static %}
 
-{% block title %}Website Dashboard{% endblock %}
+{% block title %}Dashboard - Adarsh Admin{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-item active"><i class="fa-solid fa-house"></i> Dashboard</span>
+{% endblock %}
 
 {% block content %}
 <!-- Dashboard Container -->
@@ -26,7 +30,7 @@
                 </div>
                 <div class="wa-control-body">
                     <span class="wa-control-badge">Now: <strong id="statusText">{{ website_status|title }}</strong></span>
-                    {% if is_super_admin or perm_website_publish %}
+                    {% if is_admin or is_pro or perm_website_publish %}
                     <button class="btn btn-sm {% if website_status == 'live' %}btn-warning{% else %}btn-success{% endif %}" id="toggleStatusBtn">
                         <i class="fa-solid {% if website_status == 'live' %}fa-pause{% else %}fa-play{% endif %}"></i>
                         {% if website_status == 'live' %}Set Draft{% else %}Go Live{% endif %}
@@ -47,7 +51,7 @@
                 </div>
                 <div class="wa-control-body">
                     <span class="wa-control-badge">Mode: <strong id="notFoundStatusText">{% if website_not_found_mode %}On{% else %}Off{% endif %}</strong></span>
-                    {% if is_super_admin or perm_website_publish %}
+                    {% if is_admin or is_pro or perm_website_publish %}
                     <button class="btn btn-sm {% if website_not_found_mode %}btn-success{% else %}btn-danger{% endif %}" id="toggleNotFoundBtn">
                         <i class="fa-solid {% if website_not_found_mode %}fa-power-off{% else %}fa-triangle-exclamation{% endif %}"></i>
                         {% if website_not_found_mode %}Disable Not Found Mode{% else %}Enable Not Found Mode{% endif %}
@@ -56,7 +60,7 @@
                 </div>
             </div>
 
-            {% if is_pro_user %}
+            {% if is_pro %}
             <div class="wa-control-card is-live" id="proAccessBanner">
                 <div class="wa-control-head">
                     <span class="wa-control-icon">

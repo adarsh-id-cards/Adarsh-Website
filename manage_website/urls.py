@@ -43,10 +43,6 @@ urlpatterns = [
     path('api/clients/<int:pk>/delete/', views.api_client_delete, name='api_client_delete'),
     path('api/clients/<int:pk>/toggle/', views.api_client_toggle, name='api_client_toggle'),
 
-    # ======================================================================
-    # API — Bridge Status
-    # ======================================================================
-    path('api/bridge/status/', views.api_bridge_status, name='api_bridge_status'),
 
     # ==========================================================================
     # API — Reviews / Testimonials

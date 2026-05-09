@@ -597,4 +597,30 @@ class ContactSubmission(models.Model):
             2: 3600,      # 1 hour
             3: 86400,     # 24 hours
         }
-        return delays.get(self.email_retry_count, None)  # None = stop retrying
+    # ==========================================
+# 6. CLIENT LOGOS
+# ==========================================
+
+class WebsiteClientLogo(models.Model):
+    """
+    Local storage for client logos displayed on the public website.
+    Replaces the legacy bridge-based client logo system.
+    """
+    name = models.CharField(max_length=255)
+    logo = models.ImageField(upload_to='images/Clients/', help_text='Client logo image')
+    website_is_visible = models.BooleanField(default=True, db_index=True)
+    website_display_order = models.PositiveIntegerField(default=0, db_index=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Website Client Logo'
+        verbose_name_plural = 'Website Client Logos'
+        ordering = ['website_display_order', '-created_at']
+        indexes = [
+            models.Index(fields=['website_is_visible', 'website_display_order']),
+        ]
+
+    def __str__(self):
+        return self.name
