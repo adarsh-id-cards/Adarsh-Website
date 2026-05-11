@@ -4,11 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>html { scroll-behavior: smooth; }</style>
     
     <!-- SEO Meta Tags -->
     <title>{% if meta_title %}{{ meta_title }}{% else %}{{ site_name }} | {{ business.tagline|default:'Professional ID Card Solutions' }}{% endif %}</title>
     <meta name="description" content="{% if meta_description %}{{ meta_description }}{% else %}Professional ID Card and Lanyard Printing Solutions in Bhopal. Trusted by 1000+ institutions.{% endif %}">
     <meta name="keywords" content="Adarsh ID Cards, Adarsh Bhopal, ID Card Printing Bhopal, Custom Lanyards Bhopal, School ID Cards MP, Identity Solutions Madhya Pradesh, PVC ID Card Manufacturer, RFID Cards Bhopal, Digital Lanyard Printing, School Stationery Suppliers Bhopal">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="{% if canonical_url %}{{ canonical_url }}{% else %}{{ request.build_absolute_uri }}{% endif %}">
     
     <!-- Open Graph -->
@@ -62,12 +64,12 @@
     <!-- CSS Files -->
     <link rel="stylesheet" href="{% static 'website/styles/style.css' %}?v=150">
     <link rel="preload" href="{% static 'website/styles/page-common.css' %}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <link rel="preload" href="{% static 'website/styles/responsive.css' %}?v=148" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <link rel="preload" href="{% static 'website/styles/ui-consistency.css' %}?v=148" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="{% static 'website/styles/responsive.css' %}?v=3.18.01" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="{% static 'website/styles/ui-consistency.css' %}?v=3.18.01" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript>
         <link rel="stylesheet" href="{% static 'website/styles/page-common.css' %}">
-        <link rel="stylesheet" href="{% static 'website/styles/responsive.css' %}?v=148">
-        <link rel="stylesheet" href="{% static 'website/styles/ui-consistency.css' %}?v=148">
+        <link rel="stylesheet" href="{% static 'website/styles/responsive.css' %}?v=3.18.01">
+        <link rel="stylesheet" href="{% static 'website/styles/ui-consistency.css' %}?v=3.18.01">
     </noscript>
 
     {% block extra_css %}{% endblock %}
@@ -127,8 +129,9 @@
     </script>
     {% block extra_structured_data %}{% endblock %}
 </head>
-<body>
-    <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999;" onfocus="this.style.cssText='position:fixed;top:0;left:0;width:auto;height:auto;padding:8px 16px;background:#0A92DD;color:#fff;z-index:9999;font-size:1rem;text-decoration:none;'">Skip to main content</a>
+<body id="top">
+    <a href="#main-content" class="skip-link">Skip to Content</a>
+    
     <!-- Top Bar -->
     <div class="top-bar">
         <div class="container">
@@ -162,7 +165,7 @@
                 <div class="logo">
                     <a href="{% url 'website:home' %}" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit;">
                         <div class="logo-box">
-                            <img src="{% static 'assets/Adarsh 3dN.png' %}" alt="Adarsh Logo" class="logo-img">
+                            <img src="{% static 'website/images/adarsh.png' %}" alt="Adarsh Logo" class="logo-img" width="42" height="42" fetchpriority="high" decoding="async">
                         </div>
                         <span class="logo-text">{{ site_name }}</span>
                     </a>
@@ -174,9 +177,9 @@
                         </button>
                     </li>
                     <li><a href="{% url 'website:home' %}">Home</a></li>
-                    <li><a href="{% url 'website:our_work' %}">Our Products</a></li>
                     <li><a href="{% url 'website:why_choose_us' %}">Why Choose Us</a></li>
                     <li><a href="{% url 'website:trusted_clients' %}">Trusted Clients</a></li>
+                    <li><a href="{% url 'website:our_work' %}">Our Products</a></li>
                     <li><a href="{% url 'website:testimonials' %}">Testimonials</a></li>
                     <li class="nav-btn-group">
                         <a href="{% url 'website:panel_entry' %}" class="btn-cta btn-login"><i class="fa-solid fa-user-shield" aria-hidden="true"></i> Panel</a>
@@ -203,11 +206,11 @@
             <div class="footer-content">
                 <!-- About Section -->
                 <div class="footer-section">
-                    <div class="footer-brand" aria-label="Brand identity">
-                        <span class="footer-brand-logo-box" aria-hidden="true">
-                            <img src="{% static 'assets/Adarsh 3dN.png' %}" alt="" class="footer-brand-logo-img">
-                        </span>
-                        <span class="footer-brand-name">{{ site_name }}</span>
+                    <div class="footer-brand" aria-label="Brand identity" style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;">
+                        <div class="logo-box">
+                            <img src="{% static 'website/images/adarsh.png' %}" alt="Adarsh Logo" class="logo-img" width="42" height="42" loading="lazy" decoding="async">
+                        </div>
+                        <span class="logo-text">{{ site_name }}</span>
                     </div>
                     <p>Your trusted partner for professional ID card solutions with 20+ years of excellence.</p>
                     <div class="social-links">
@@ -234,8 +237,9 @@
                     <h4>Quick Links</h4>
                     <ul>
                         <li><a href="{% url 'website:home' %}">Home</a></li>
-                        <li><a href="{% url 'website:our_work' %}">Our Products</a></li>
                         <li><a href="{% url 'website:why_choose_us' %}">Why Choose Us</a></li>
+                        <li><a href="{% url 'website:trusted_clients' %}">Trusted Clients</a></li>
+                        <li><a href="{% url 'website:our_work' %}">Our Products</a></li>
                         <li><a href="{% url 'website:testimonials' %}">Testimonials</a></li>
                         <li><a href="{% url 'website:home' %}#contact">Get a Quote</a></li>
                         <li><a href="{% url 'website:panel_entry' %}"><i class="fa-solid fa-user-shield" aria-hidden="true"></i> Panel</a></li>
@@ -249,6 +253,7 @@
                         <li><a href="{% url 'website:category_detail' 'id-cards' %}">School ID Cards</a></li>
                         <li><a href="{% url 'website:category_detail' 'id-cards' %}">Staff Identity Cards</a></li>
                         <li><a href="{% url 'website:category_detail' 'lanyards' %}">Digital Lanyards</a></li>
+                        <li><a href="{% url 'website:category_detail' 'id-cards' %}">Customized Badges</a></li>
                         <li><a href="{% url 'website:category_detail' 'marksheets' %}">Printed Marksheets</a></li>
                         <li><a href="{% url 'website:category_detail' 'certificates' %}">Certificate Design</a></li>
                         <li><a href="{% url 'website:category_detail' 'id-cards' %}">RFID Integration</a></li>
@@ -286,9 +291,6 @@
 
     <!-- Global Scripts -->
     <script src="{% static 'website/scripts/main.js' %}?v=2" defer></script>
-    <script src="{% static 'js/core/unified-select-dropdown.js' %}" defer></script>
-    <script src="{% static 'js/core/icon-button-text.js' %}" defer></script>
-    <script src="{% static 'js/core/icon-consistency.js' %}" defer></script>
 
     <!-- Copy to clipboard for top-bar items -->
     <script>

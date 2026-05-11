@@ -3,73 +3,6 @@
  * Handles: Slider, Mobile Menu, Typing Effect, AJAX Forms, Phone Slideshow, and Scroll Animations
  */
 
-// ===== 1. Dynamic Hero Slider (Crossfade) =====
-function initHeroSlider() {
-    const sliderImg = document.getElementById('slider-img');
-    const card = document.querySelector('.slide-card');
-    const dots = document.querySelectorAll('.dot');
-    const titleEl = document.getElementById('slider-title') || document.querySelector('.card-info h3');
-    const subtitleEl = document.getElementById('slider-subtitle') || document.querySelector('.card-info p');
-
-    if (!sliderImg || dots.length === 0) return;
-
-    // Preload all images for seamless transitions
-    dots.forEach(dot => {
-        const url = dot.getAttribute('data-url');
-        if (url) { const img = new Image(); img.src = url; }
-    });
-
-    let isAnimating = false;
-
-    function updateSlider(index) {
-        if (isAnimating) return;
-        const targetDot = dots[index];
-        const newUrl = targetDot.getAttribute('data-url');
-        if (!newUrl || sliderImg.src.endsWith(newUrl.split('/').pop())) return;
-
-        const newTitle = targetDot.getAttribute('data-title');
-        const newSubtitle = targetDot.getAttribute('data-subtitle');
-
-        isAnimating = true;
-        card.classList.add('push-out');
-
-        setTimeout(() => {
-            sliderImg.src = newUrl;
-            if (titleEl && newTitle) titleEl.textContent = newTitle;
-            if (subtitleEl && newSubtitle) subtitleEl.textContent = newSubtitle;
-
-            dots.forEach(d => d.classList.remove('active'));
-            targetDot.classList.add('active');
-
-            card.classList.remove('push-out');
-            card.classList.add('push-in');
-
-            setTimeout(() => {
-                card.classList.remove('push-in');
-                isAnimating = false;
-            }, 500);
-        }, 500);
-    }
-
-    let currentSlide = 0;
-
-    let slideInterval = setInterval(() => {
-        currentSlide = (currentSlide + 1) % dots.length;
-        updateSlider(currentSlide);
-    }, 5000);
-
-    dots.forEach((dot, idx) => {
-        dot.addEventListener('click', () => {
-            clearInterval(slideInterval);
-            updateSlider(idx);
-            currentSlide = idx;
-            slideInterval = setInterval(() => {
-                currentSlide = (currentSlide + 1) % dots.length;
-                updateSlider(currentSlide);
-            }, 5000);
-        });
-    });
-}
 
 // ===== 2. Hero Typing Effect (Full-Line with Highlighted Product) =====
 function initTypingEffect() {
@@ -275,81 +208,59 @@ function createScrollTopButton() {
     });
 }
 
-// ===== 5. PWA Phone Mockup Slideshow =====
-function initPhoneSlideshow() {
-    const slides = document.querySelectorAll('.phone-slide');
-    if (slides.length === 0) return;
+// Functions removed as they are no longer used in templates:
+// initPhoneSlideshow, initQrCode, initAppCtaLink, initLogoSpin
 
-    let current = 0;
-    setInterval(() => {
-        slides[current].classList.remove('active');
-        current = (current + 1) % slides.length;
-        slides[current].classList.add('active');
-    }, 3000);
+
+// ===== 10. Interactive Hero Grid (Spotlight Effect) =====
+function initHeroGrid() {
+    const heroes = document.querySelectorAll('.hero, .page-hero, .download-app-section');
+    if (heroes.length === 0) return;
+
+    heroes.forEach(hero => {
+        hero.addEventListener('mousemove', (e) => {
+            const rect = hero.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const px = (x / rect.width) * 100;
+            const py = (y / rect.height) * 100;
+            hero.style.setProperty('--mouse-x', `${px}%`);
+            hero.style.setProperty('--mouse-y', `${py}%`);
+
+            // Create transient interactive bubbles
+            if (Math.random() > 0.88) {
+                createHeroBubble(x, y, hero);
+            }
+        });
+        
+        // Reset position on mouse leave
+        hero.addEventListener('mouseleave', () => {
+            hero.style.setProperty('--mouse-x', '50%');
+            hero.style.setProperty('--mouse-y', '50%');
+        });
+    });
 }
 
-// ===== 6. Dynamic QR Code =====
-function initQrCode() {
-    const qrImg = document.getElementById('appQrCode');
-    if (!qrImg) return;
-    if (qrImg.dataset.static === 'true') return;
-
-    // QR code points to the mobile app — user opens in Chrome → installs PWA
-    const appUrl = window.__panelUrl ? (window.__panelUrl + '/app/') : (window.location.origin + '/app/');
-    qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&color=100F57&data=' + encodeURIComponent(appUrl);
-}
-
-// ===== 7. Landing CTA App Link =====
-function initAppCtaLink() {
-    const cta = document.getElementById('openAppCta');
-    if (!cta) return;
-
-    const panelUrl = (window.__panelUrl || '').trim();
-    const appUrl = panelUrl ? (panelUrl.replace(/\/$/, '') + '/app/') : (window.location.origin + '/app/');
-    cta.setAttribute('href', appUrl);
-}
-
-// ===== 7. Logo Spin Animation (repeat every 10 seconds) =====
-function initLogoSpin() {
-    const logoImg = document.querySelector('.logo-img');
-    if (!logoImg) return;
-
-    function spin() {
-        logoImg.style.animation = 'none';
-        // Force reflow
-        void logoImg.offsetHeight;
-        logoImg.style.animation = 'logoSpin 1s ease-in-out';
-    }
-
-    // First spin after 3 seconds, then every 5 seconds
-    setTimeout(function() {
-        spin();
-        setInterval(spin, 5000);
-    }, 3000);
-}
-
-// ===== 9. Glowing Border Rotation (fallback for browsers without @property) =====
-function initGlowBorder() {
-    const slideCard = document.querySelector('.slide-card');
-    if (!slideCard) return;
-    // Check if @property is supported
-    if (typeof CSS === 'undefined' || !CSS.registerProperty) {
-        let angle = 0;
-        function updateAngle() {
-            angle = (angle + 2) % 360;
-            slideCard.style.setProperty('--glow-angle', angle + 'deg');
-            requestAnimationFrame(updateAngle);
-        }
-        slideCard.style.animation = 'none';
-        requestAnimationFrame(updateAngle);
-    }
+function createHeroBubble(x, y, container) {
+    const bubble = document.createElement('div');
+    bubble.className = 'hero-bubble';
+    const size = Math.random() * 30 + 10;
+    bubble.style.width = `${size}px`;
+    bubble.style.height = `${size}px`;
+    bubble.style.left = `${x}px`;
+    bubble.style.top = `${y}px`;
+    
+    container.appendChild(bubble);
+    
+    // Remove after animation completes
+    setTimeout(() => bubble.remove(), 1500);
 }
 
 // ===== Initialize Everything =====
 document.addEventListener('DOMContentLoaded', () => {
-    initHeroSlider();
     initMobileMenu();
     initTypingEffect();
+    initHeroGrid();
     if ('requestIdleCallback' in window) {
         requestIdleCallback(runNonCriticalFeatures, { timeout: 1000 });
     } else {
@@ -360,9 +271,4 @@ document.addEventListener('DOMContentLoaded', () => {
 function runNonCriticalFeatures() {
     initScrollEffects();
     createScrollTopButton();
-    initPhoneSlideshow();
-    initQrCode();
-    initAppCtaLink();
-    initLogoSpin();
-    initGlowBorder();
 }

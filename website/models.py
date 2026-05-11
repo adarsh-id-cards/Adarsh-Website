@@ -84,9 +84,6 @@ class BusinessDetails(models.Model):
         """Ensure only one instance of BusinessDetails exists. Sanitize HTML fields."""
         if not self.pk and BusinessDetails.objects.exists():
             raise ValidationError("Only one BusinessDetails instance is allowed. Update the existing one.")
-        # Sanitize hero_title: allow only <span>, <br>, <strong>, <em> tags
-        if self.hero_title:
-            self.hero_title = self._sanitize_html(self.hero_title)
         super(BusinessDetails, self).save(*args, **kwargs)
 
     @staticmethod

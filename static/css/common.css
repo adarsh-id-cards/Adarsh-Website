@@ -1372,7 +1372,7 @@ body[style*="overflow:hidden"] {
   border-bottom: 1px solid var(--color-gray-200);
   position: sticky;
   top: 0;
-  z-index: 26;
+  z-index: var(--zi-sticky);
   min-height: 43px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -1436,7 +1436,7 @@ body[style*="overflow:hidden"] {
 
 .pro-feature-page .action-bar {
   top: 47px !important;
-  z-index: 24;
+  z-index: calc(var(--zi-sticky) - 2);
 }
 
 @media (max-width: 768px) {
@@ -1510,7 +1510,7 @@ body.bulk-operation-active #blockingOverlay {
 
 body.bulk-operation-active .alpine-toast-wrapper,
 body.bulk-operation-active #downloadToastContainer {
-  z-index: 13000 !important;
+  z-index: var(--zi-max) !important;
 }
 
 body.bulk-operation-active #blockingOverlay,
@@ -2083,7 +2083,7 @@ body.bulk-operation-active #blockingOverlay * {
 .blocking-overlay {
   position: fixed;
   inset: 0;
-  z-index: 12000;
+  z-index: var(--zi-toast);
   display: none;
   align-items: center;
   justify-content: center;

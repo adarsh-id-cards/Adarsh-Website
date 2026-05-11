@@ -457,7 +457,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const playOverlay = document.createElement('div');
             playOverlay.className = 'gallery-video-overlay';
-            playOverlay.innerHTML = '<button class="gallery-play-btn"><i class="fas fa-play"></i></button>';
+            playOverlay.innerHTML = '<button class="gallery-play-btn"><i class="fa-solid fa-play"></i></button>';
 
             const playBtn = playOverlay.querySelector('.gallery-play-btn');
             const durationBadge = document.createElement('span');
@@ -762,10 +762,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const url = window.location.origin + '/#category=' + currentGalleryCategorySlug;
             navigator.clipboard.writeText(url).then(() => {
                 const icon = shareBtn.querySelector('i');
-                icon.className = 'fas fa-check';
+                icon.className = 'fa-solid fa-check';
                 shareBtn.title = 'Copied!';
                 setTimeout(() => {
-                    icon.className = 'fas fa-share-alt';
+                    icon.className = 'fa-solid fa-share-nodes';
                     shareBtn.title = 'Copy link to this gallery';
                 }, 2000);
             }).catch(() => {

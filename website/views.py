@@ -775,8 +775,8 @@ def download_app(request):
     """Android app download page."""
     context = get_common_context()
 
-    # Check if APK file exists
-    apk_path = os.path.join(_s.STATIC_ROOT or os.path.join(_s.BASE_DIR, 'static'), 'app', 'adarsh-id-cards.apk')
+    # Check if APK file exists in the website-specific static folder
+    apk_path = os.path.join(_s.BASE_DIR, 'static', 'website', 'apk', 'adarsh-admin.apk')
     apk_exists = os.path.isfile(apk_path)
     apk_size_mb = round(os.path.getsize(apk_path) / (1024 * 1024), 1) if apk_exists else 0
 

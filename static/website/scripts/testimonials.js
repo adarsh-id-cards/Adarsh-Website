@@ -1,12 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     
-    // --- 1. Filter Logic ---
-    const filterTabs = document.querySelectorAll('.filter-tab');
-    const cards = document.querySelectorAll('.testimonial-card');
-    const testimonialGrid = document.getElementById('testimonialGrid');
-
     function initHelpfulButtons() {
         const helpfulButtons = document.querySelectorAll('.helpful-btn[data-id]');
+        const testimonialGrid = document.getElementById('testimonialGrid');
         if (!helpfulButtons.length || !testimonialGrid) return;
 
         const helpfulUrl = testimonialGrid.dataset.helpfulUrl || '/testimonial-helpful/';
@@ -53,7 +49,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     btn.classList.add('active');
                 } catch (_err) {
-                    showToast('Unable to mark as helpful right now.', 'error');
+                    if (typeof showToast === 'function') {
+                        showToast('Unable to mark as helpful right now.', 'error');
+                    }
                 } finally {
                     btn.dataset.loading = '0';
                     btn.classList.remove('is-loading');
@@ -63,45 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     initHelpfulButtons();
-
-    filterTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            const filter = this.dataset.filter;
-            filterTabs.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-
-            let visibleCount = 0;
-
-            cards.forEach(card => {
-                const category = (card.dataset.category || '').toLowerCase().trim();
-                if (filter === 'all' || category === filter) {
-                    card.style.display = 'block';
-                    card.style.opacity = '1';
-                    card.style.transform = 'scale(1)';
-                    visibleCount++;
-                } else {
-                    card.style.opacity = '0';
-                    card.style.transform = 'scale(0.95)';
-                    setTimeout(() => { card.style.display = 'none'; }, 300);
-                }
-            });
-
-            // Show/hide "no results" message for filtered view
-            let noResultsMsg = testimonialGrid?.querySelector('.filter-no-results');
-            if (visibleCount === 0 && cards.length > 0) {
-                if (!noResultsMsg && testimonialGrid) {
-                    noResultsMsg = document.createElement('div');
-                    noResultsMsg.className = 'filter-no-results';
-                    noResultsMsg.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 60px 20px;';
-                    noResultsMsg.innerHTML = '<p style="color: #94a3b8; font-size: 1.1rem; margin: 0;">No reviews found for this category.</p>';
-                    testimonialGrid.appendChild(noResultsMsg);
-                }
-                if (noResultsMsg) noResultsMsg.style.display = 'block';
-            } else if (noResultsMsg) {
-                noResultsMsg.style.display = 'none';
-            }
-        });
-    });
 
     // --- 2. Video Modal Logic ---
     const videoModal = document.getElementById('videoModal');

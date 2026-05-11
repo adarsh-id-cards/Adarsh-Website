@@ -90,15 +90,7 @@
         height: 220px;
     }
     
-    .filter-tabs {
-        gap: 10px;
-        margin-bottom: 40px;
-    }
-    
-    .filter-tab {
-        padding: 10px 20px;
-        font-size: 0.85rem;
-    }
+/* Filter responsive styles removed */
     
     .testimonials-masonry {
         gap: 20px;
@@ -230,14 +222,7 @@
         font-size: 0.85rem;
     }
     
-    .filter-tabs {
-        gap: 8px;
-    }
-    
-    .filter-tab {
-        padding: 8px 15px;
-        font-size: 0.8rem;
-    }
+/* Filter responsive styles removed */
     
     .testimonials-masonry {
         grid-template-columns: 1fr;
@@ -291,16 +276,7 @@
         align-items: flex-start;
     }
     
-    .card-tag {
-        position: static;
-        align-self: flex-start;
-        font-size: 0.7rem;
-        padding: 4px 10px;
-        margin-top: 10px;
-        height: auto;
-        line-height: 1.2;
-        white-space: nowrap;
-    }
+/* Card tag hidden */
     
     .load-more-btn {
         padding: 12px 30px;
@@ -517,17 +493,7 @@
         font-size: 1.5rem;
     }
     
-    .filter-tabs {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-    }
-    
-    .filter-tab {
-        padding: 10px;
-        text-align: center;
-        border-radius: 10px;
-    }
+/* Filter responsive styles removed */
     
     .video-card.main-video .video-thumbnail,
     .video-card:not(.main-video) .video-thumbnail {
@@ -651,10 +617,7 @@
         font-size: 1.3rem;
     }
     
-    .filter-tab {
-        font-size: 0.75rem;
-        padding: 8px;
-    }
+/* Filter responsive styles removed */
     
     .testimonial-card {
         padding: 17px;
@@ -1041,17 +1004,21 @@
 
     .review-modal-share,
     .review-modal-close {
-        width: 32px;
-        height: 32px;
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     
     .review-modal-content h3 {
-        font-size: 1.25rem;
-        margin-bottom: 20px;
+        font-size: 1.35rem;
+        margin-bottom: 24px;
+        color: var(--wa-brand-900);
+        letter-spacing: -0.02em;
     }
     
     .form-group {
-        margin-bottom: 15px;
+        margin-bottom: 18px;
     }
     
     .form-group input,
@@ -1082,11 +1049,16 @@
     }
 
     .review-history-list {
-        max-height: 220px;
+        max-height: 250px;
+        gap: 12px;
+        display: flex;
+        flex-direction: column;
     }
-
+    
     .review-history-item {
-        padding: 9px;
+        padding: 12px;
+        border-radius: 12px;
+        background: #f8fafc;
     }
 
     .review-history-head {

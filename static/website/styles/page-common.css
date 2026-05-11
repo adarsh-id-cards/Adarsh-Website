@@ -13,6 +13,8 @@
     overflow: hidden;
 }
 
+/* Hero grid styles moved to style.css for consolidation */
+
 /* Glowing Circle Effects */
 .page-hero::before {
     content: '';
@@ -129,7 +131,7 @@
 }
 
 .section-header h2 {
-    font-size: 2.8rem;
+    font-size: clamp(2rem, 5vw, 2.8rem) !important;
     font-weight: 800;
     color: #1a365d;
     margin-bottom: 15px;

@@ -1,23 +1,25 @@
 {% load static custom_filters %}
 <!-- Hero Section -->
 <section class="hero" id="home">
+    <div class="hero-grid"></div>
     <div class="hero-inner">
         <div class="hero-content">
             <div class="hero-badge">
                 <i class="fa-solid fa-award" aria-hidden="true"></i>
                 <span>20+ Years of Trust</span>
             </div>
-            <h1>
+            <h1 style="min-height: clamp(80px, 12vw, 140px); display: flex; align-items: center; justify-content: center;">
                 <span class="typing-wrapper">
                     <span id="typingLine">Premium ID Cards for Your School</span>
-                    <span class="sr-only" style="display:none;">Premium ID Card and Lanyard Printing Solutions in Bhopal</span>
                 </span>
+                <span class="sr-only">Adarsh ID Cards - Professional ID Card and Lanyard Printing Solutions in Bhopal</span>
             </h1>
             <p class="hero-subtitle">
                 {{ business.hero_description|default:"Create stunning, secure, and professional ID cards that represent your school or organization with excellence." }}
             </p>
             <div class="hero-buttons">
-                <a href="#contact" class="btn btn-primary"><i class="fa-solid fa-envelope"></i> Enquire Now</a>
+                <a href="#contact" class="btn btn-primary"><i class="fa-solid fa-envelope" aria-hidden="true"></i> Enquire Now</a>
+                <a href="#" class="btn btn-app-download"><i class="fa-brands fa-google-play" aria-hidden="true"></i> Google Play</a>
             </div>
         </div>
     </div>

@@ -24,6 +24,28 @@
     --wa-section-spacing-desktop: 88px;
     --wa-section-spacing-tablet: 72px;
     --wa-section-spacing-mobile: 56px;
+
+    /* Centralized Z-Index Architecture */
+    --zi-deep: -100;
+    --zi-neg: -1;
+    --zi-zero: 0;
+    --zi-base: 1;
+    --zi-above: 10;
+    --zi-decoration: 20;
+    --zi-sticky: 100;
+    --zi-navbar: 1000;
+    --zi-topbar: 1100;
+    --zi-tooltip: 2000;
+    --zi-dropdown: 5000;
+    --zi-mobile-overlay: 9000;
+    --zi-mobile-menu: 10000;
+    --zi-mobile-close: 10100;
+    --zi-toast: 15000;
+    --zi-modal-overlay: 20000;
+    --zi-modal-content: 20100;
+    --zi-max: 99999;
+
+    --zi-hero-inner: var(--zi-above);
 }
 
 body {
@@ -74,6 +96,37 @@ h6 {
     padding-right: var(--wa-section-gutter-desktop) !important;
 }
 
+@media (max-width: 767px) {
+    .page-hero > .container,
+    .trusted-schools > .container,
+    .why-choose-us > .container,
+    .our-works > .container,
+    .testimonials > .container,
+    .contact-section > .container,
+    .download-app-section > .container,
+    .key-features > .container,
+    .promises-section > .container,
+    .trust-section > .container,
+    .categories-showcase > .container,
+    .portfolio-section > .container,
+    .testimonials-grid-section > .container,
+    .ratings-section > .container,
+    .policy-section > .container {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+}
+
+/* Restored horizontal gutters for top-level structural containers to fix 'edge-sticking'. */
+@media (max-width: 767px) {
+    .top-bar,
+    .navbar,
+    .footer {
+        padding-left: var(--wa-section-gutter-mobile) !important;
+        padding-right: var(--wa-section-gutter-mobile) !important;
+    }
+}
+
 /* Keep section spacing consistent across homepage and inner pages. */
 .why-choose-us,
 .our-works,
@@ -89,6 +142,26 @@ h6 {
 .policy-section {
     padding-top: var(--wa-section-spacing-desktop) !important;
     padding-bottom: var(--wa-section-spacing-desktop) !important;
+}
+
+@media (max-width: 767px) {
+    .why-choose-us,
+    .our-works,
+    .testimonials,
+    .contact-section,
+    .key-features,
+    .promises-section,
+    .trust-section,
+    .categories-showcase,
+    .portfolio-section,
+    .testimonials-grid-section,
+    .ratings-section,
+    .policy-section {
+        padding-top: var(--wa-section-spacing-mobile) !important;
+        padding-bottom: var(--wa-section-spacing-mobile) !important;
+        padding-left: var(--wa-section-gutter-mobile) !important;
+        padding-right: var(--wa-section-gutter-mobile) !important;
+    }
 }
 
 .section-title,
@@ -140,9 +213,21 @@ page-hero .hero-subtitle,
     min-height: calc(1.15em * 2);
 }
 
-.mobile-menu-close-item,
-.mobile-menu-overlay {
-    display: none;
+/* Global component layer assignments */
+.top-bar { z-index: var(--zi-topbar) !important; }
+.navbar { z-index: var(--zi-navbar) !important; }
+.hero-inner { z-index: var(--zi-hero-inner) !important; }
+.copy-tooltip { z-index: var(--zi-tooltip) !important; }
+.wa-modal-overlay { z-index: var(--zi-modal-overlay) !important; }
+.wa-modal { z-index: var(--zi-modal-content) !important; }
+.wa-confirm-overlay { z-index: calc(var(--zi-modal-overlay) + 10) !important; }
+.scroll-top-btn { z-index: var(--zi-sticky) !important; }
+.toast, .alpine-toast-wrapper, #downloadToastContainer { z-index: var(--zi-toast) !important; }
+
+/* Stacking context fix: when menu is open, navbar must elevate above overlay */
+html.mobile-menu-open .navbar,
+body.mobile-menu-open .navbar {
+    z-index: calc(var(--zi-mobile-menu) + 1) !important;
 }
 
 html.mobile-menu-open,
@@ -315,7 +400,6 @@ body.mobile-menu-open {
     border: 1px solid var(--wa-border) !important;
 }
 
-.logo-box,
 .download-app-section .download-app-phone .phone-mockup,
 .modal-content,
 .video-modal-content {
@@ -477,6 +561,7 @@ body.mobile-menu-open {
     .our-works > .container,
     .testimonials > .container,
     .contact-section > .container,
+    .download-app-section > .container,
     .key-features > .container,
     .promises-section > .container,
     .trust-section > .container,
@@ -485,8 +570,8 @@ body.mobile-menu-open {
     .testimonials-grid-section > .container,
     .ratings-section > .container,
     .policy-section > .container {
-        padding-left: var(--wa-section-gutter-mobile) !important;
-        padding-right: var(--wa-section-gutter-mobile) !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
     }
 
     .why-choose-us,
@@ -702,12 +787,12 @@ body.mobile-menu-open {
         margin: 0;
         padding: 0;
         background: rgba(16, 15, 87, 0.46);
-        backdrop-filter: blur(2px);
-        -webkit-backdrop-filter: blur(2px);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
         opacity: 0;
         pointer-events: none;
-        transition: opacity 0.2s ease;
-            z-index: 900;
+        transition: opacity 0.3s ease;
+        z-index: 995; /* Sit just below the navbar (1000) */
     }
 
     .mobile-menu-overlay.active {
@@ -722,22 +807,32 @@ body.mobile-menu-open {
     }
 
     .mobile-menu-close {
-        width: 100%;
+        width: 44px;
+        height: 44px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        height: 46px;
-        border: 0;
-        background: #f8fafc;
-        color: #100f57;
-        font-size: 0.9rem;
-        font-weight: 700;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.15);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        font-size: 1.25rem;
         cursor: pointer;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .mobile-menu-close:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: rotate(90deg) scale(1.05);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
     }
 
     .mobile-menu-close i {
-        font-size: 0.95rem;
+        font-size: 1.1rem;
+        line-height: 1;
     }
 
     .nav-links,
@@ -758,11 +853,11 @@ body.mobile-menu-open {
 
     .mobile-menu-close-item {
         position: absolute;
-        top: 12px;
-        right: 12px;
+        top: 16px;
+        right: 16px;
         width: auto;
         border-bottom: none !important;
-        z-index: 2;
+        z-index: 100;
     }
 
     .nav-links {
@@ -770,8 +865,8 @@ body.mobile-menu-open {
     }
 
     .contact-section {
-        padding-left: var(--wa-section-gutter-mobile) !important;
-        padding-right: var(--wa-section-gutter-mobile) !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
     }
 
     .contact-wrapper {
@@ -964,7 +1059,7 @@ body.mobile-menu-open {
 
     .bento-card-1 {
         order: 2;
-        flex-direction: column !important;
+        flex-direction: column-reverse !important;
     }
 
     .bento-card-2 {
@@ -973,7 +1068,7 @@ body.mobile-menu-open {
 
     .bento-card-4 {
         order: 3;
-        flex-direction: column-reverse !important;
+        flex-direction: column !important;
     }
 
     .bento-card-3 {
@@ -1252,43 +1347,123 @@ body.mobile-menu-open {
     }
 
     /* Make the mobile nav a full-screen stacked panel when opened */
-    .nav-links.active {
+    .nav-links {
+        display: flex !important;
         position: fixed !important;
         inset: 0 !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
-        justify-content: flex-start !important;
-        padding-top: 64px !important;
-        gap: 18px !important;
-        background: linear-gradient(135deg, rgba(16,15,87,0.98) 0%, rgba(10,146,221,0.98) 100%) !important;
-        z-index: 9999 !important;
+        justify-content: center !important; /* Centered vertically */
+        padding-top: 60px !important; /* Space for the logo/top area if needed */
+        gap: 15px !important;
+        background: linear-gradient(135deg, rgba(16, 15, 87, 0.98) 0%, rgba(10, 146, 221, 0.98) 100%) !important;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        z-index: var(--zi-mobile-menu) !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
+        transform: scale(0.95) translateY(-20px);
+        transform-origin: center center;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+        opacity: 0;
+        clip-path: circle(0% at 50% 50%);
+    }
+
+    .nav-links.active {
+        transform: scale(1) translateY(0);
+        pointer-events: auto;
+        opacity: 1;
+        clip-path: circle(150% at 50% 50%);
+    }
+
+    /* Staggered Link Animations */
+    .nav-links.active li {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        animation: mobileLinkFadeIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        opacity: 0;
+        transform: translateY(30px) scale(0.9);
+    }
+
+    .nav-links.active li:nth-child(1) { animation-delay: 0.1s; }
+    .nav-links.active li:nth-child(2) { animation-delay: 0.15s; }
+    .nav-links.active li:nth-child(3) { animation-delay: 0.2s; }
+    .nav-links.active li:nth-child(4) { animation-delay: 0.25s; }
+    .nav-links.active li:nth-child(5) { animation-delay: 0.3s; }
+    .nav-links.active li:nth-child(6) { animation-delay: 0.35s; }
+    .nav-links.active li:nth-child(7) { animation-delay: 0.4s; }
+
+    @keyframes mobileLinkFadeIn {
+        from { opacity: 0; transform: translateY(30px) scale(0.9); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .nav-links.active a {
         color: #fff !important;
-        font-size: 1.05rem !important;
-        padding: 8px 12px !important;
+        font-size: 1.35rem !important;
+        font-weight: 800 !important;
+        padding: 14px 20px !important;
+        width: 100%;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+        transition: all 0.3s ease;
+        letter-spacing: 0.5px;
+    }
+
+    .nav-links.active a:active {
+        background: rgba(255, 255, 255, 0.1);
+        transform: scale(0.95);
     }
 
     .nav-links .nav-btn-group {
-        margin-top: 12px !important;
+        margin-top: 25px !important;
+        width: 100%;
+        padding: 0 40px !important;
+        opacity: 0;
+        animation: mobileLinkFadeIn 0.5s ease 0.45s forwards;
     }
 
     .mobile-menu-close-item {
-        z-index: 10010 !important;
-        right: 12px !important;
-        top: 12px !important;
         position: absolute !important;
+        top: 25px !important;
+        right: 20px !important;
+        z-index: var(--zi-mobile-close) !important;
+        width: auto !important;
+        display: block !important;
+        border: none !important;
+        opacity: 0;
+        transform: scale(0.5) rotate(-90deg);
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s;
+    }
+
+    .nav-links.active .mobile-menu-close-item {
+        opacity: 1;
+        transform: scale(1) rotate(0);
     }
 
     .mobile-menu-overlay {
-        z-index: 9998 !important;
+        z-index: var(--zi-mobile-overlay) !important;
+        background: rgba(16, 15, 87, 0.45);
+        backdrop-filter: blur(8px);
+        transition: opacity 0.4s ease;
+    }
+
+    /* Nuclear mobile container reset - ensures NO section has double padding */
+    .container, 
+    [class*="container"] {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* Exceptions for sections that need their container padding (like Navbar, Footer, Top-bar) */
+    .navbar > .container,
+    .top-bar > .container,
+    .footer > .container {
+        padding-left: var(--wa-section-gutter-mobile) !important;
+        padding-right: var(--wa-section-gutter-mobile) !important;
     }
 }
