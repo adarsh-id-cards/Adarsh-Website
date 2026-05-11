@@ -92,13 +92,13 @@ class Migration(migrations.Migration):
             model_name='notification',
             name='target_users',
         ),
-        migrations.RemoveField(
-            model_name='notificationread',
-            name='notification',
-        ),
         migrations.AlterUniqueTogether(
             name='notificationread',
             unique_together=None,
+        ),
+        migrations.RemoveField(
+            model_name='notificationread',
+            name='notification',
         ),
         migrations.RemoveField(
             model_name='notificationread',
