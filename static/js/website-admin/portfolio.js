@@ -4,7 +4,7 @@
  * Orientation is auto-detected server-side for image uploads.
  */
 (function () {
-    const BASE = '/website/api';
+    const BASE = '/dash/api';
     const portfolioForm = document.getElementById('portfolioForm');
     const currentMediaGroup = document.getElementById('pf_current_media_group');
     const currentMediaBox = document.getElementById('pf_current_media');

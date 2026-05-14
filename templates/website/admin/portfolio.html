@@ -927,7 +927,7 @@ async function bulkDeletePortfolio() {
     var ok = await waConfirm({ title: 'Delete Items?', text: 'Delete ' + ids.length + ' selected item(s)? This cannot be undone.', icon: 'fa-solid fa-trash' });
     if (!ok) return;
     Promise.all(ids.map(function(id) {
-        return ApiClient.post('/website/api/portfolio/' + id + '/delete/');
+        return ApiClient.post('/dash/api/portfolio/' + id + '/delete/');
     })).then(function() {
         ids.forEach(function(id) {
             var row = document.querySelector('tr[data-id="' + id + '"]');

@@ -1,8 +1,9 @@
 """
 Manage Website URL Configuration
 
-Routes for the website management dashboard.
-Mounted at /dashboard on the main domain (adarshbhopal.in)
+# Website Management URLs
+# Mounted at /dash on the main domain (adarshbhopal.in)
+# Root view: views.website_dashboard (name='dashboard')
 """
 from django.urls import path
 from . import views

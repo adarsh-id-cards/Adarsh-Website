@@ -3,7 +3,7 @@
  * Manages local website client logos (Decoupled from legacy bridge)
  */
 (function () {
-    const BASE = '/dashboard/api';
+    const BASE = '/dash/api';
 
     /* ===== UI HELPERS ===== */
 

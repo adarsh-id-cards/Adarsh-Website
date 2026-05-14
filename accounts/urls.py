@@ -28,7 +28,7 @@ urlpatterns = [
     path('logout/', views.LogoutView.as_view(), name='logout'),
     
     # Redirect to appropriate dashboard
-    path('dashboard/', views.redirect_to_dashboard, name='dashboard_redirect'),
+    path('dash/', views.redirect_to_dashboard, name='dashboard_redirect'),
     
     # Secure Credential Vault (opened via email link)
     path('secure-view/<str:token>/', views.SecureCredentialVaultView.as_view(), name='secure_credential_vault'),

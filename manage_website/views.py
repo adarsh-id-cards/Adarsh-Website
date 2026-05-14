@@ -2,7 +2,7 @@
 Manage Website Views
 ===================
 Dashboard + CRUD API for managing public website content.
-Mounted at /dashboard (on main domain adarshbhopal.in)
+Mounted at /dash (on main domain adarshbhopal.in)
 
 Architecture rule: Views are ULTRA-THIN.
   - Validate request (parse POST/FILES/JSON)
@@ -60,7 +60,7 @@ from website.views import BENTO_FORCE_INCLUDE_SLUGS, BENTO_FORCE_EXCLUDE_SLUGS
 def _is_ajax_or_api_request(request) -> bool:
     return (
         request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-        or request.path.startswith('/dashboard/api/')
+        or request.path.startswith('/dash/api/')
     )
 
 

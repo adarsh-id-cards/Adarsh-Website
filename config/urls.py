@@ -145,9 +145,9 @@ urlpatterns += [
     path('panel/', include('core.urls')),
     path('panel/auth/', include('accounts.urls')),
 
-    # ==================== MANAGE WEBSITE (/dashboard) ====================
-    # Website management dashboard on main domain (adarshbhopal.in/dashboard)
-    path('dashboard/', include('manage_website.urls')),
+    # ==================== MANAGE WEBSITE (/dash) ====================
+    # Website management dashboard on main domain (adarshbhopal.in/dash)
+    path('dash/', include('manage_website.urls')),
 
     # ==================== PUBLIC WEBSITE (/) ====================
     # Public-facing website at root — must be LAST to avoid catching /panel/ routes
