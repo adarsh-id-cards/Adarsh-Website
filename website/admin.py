@@ -21,7 +21,7 @@ class BusinessDetailsAdmin(admin.ModelAdmin):
     """
     fieldsets = (
         ('Site Branding', {
-            'fields': ('site_name', 'tagline')
+            'fields': ('site_name',)
         }),
         ('Contact Information', {
             'fields': ('email', ('phone1', 'phone2'), 'address')

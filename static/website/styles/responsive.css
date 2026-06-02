@@ -1702,8 +1702,8 @@ h2 {
     }
 
     .why-choose-us .bento-card .why-chip {
-        width: 100%;
-        justify-content: center;
+        width: auto;
+        justify-content: flex-start;
         font-size: 0.7rem;
         padding: 0.34rem 0.7rem;
     }

@@ -19,12 +19,12 @@
 
     // ── Configuration ──
     var REFRESH_INTERVAL_MS = 5 * 60 * 1000;  // 5 minutes
-    var REFRESH_URL = '/panel/auth/api/auth/session-refresh/';
-    var LOGIN_URL = '/panel/auth/login/';
+    var REFRESH_URL = '/dash/auth/api/auth/session-refresh/';
+    var LOGIN_URL = '/dash/auth/login/';
     var CHANNEL_NAME = 'adarsh_session_sync';
 
     // Skip on login page
-    if (window.location.pathname.indexOf('/auth/login') !== -1) return;
+    if (window.location.pathname.indexOf('/dash/auth/login') !== -1) return;
 
     // ── State ──
     var _timerId = null;

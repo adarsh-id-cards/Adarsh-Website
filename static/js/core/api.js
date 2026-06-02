@@ -29,7 +29,7 @@
     var _originalFetch = window.fetch;
 
     /** True when the current page is the login page itself. */
-    var _isLoginPage = window.location.pathname.indexOf('/auth/login') !== -1;
+    var _isLoginPage = window.location.pathname.indexOf('/dash/auth/login') !== -1;
 
     window.fetch = function () {
         return _originalFetch.apply(this, arguments).then(function (response) {
@@ -38,8 +38,8 @@
             // already on the login page, the session is expired/invalid.
             if (response.redirected && !_isLoginPage) {
                 var finalUrl = response.url || '';
-                if (finalUrl.indexOf('/auth/login') !== -1 || finalUrl.indexOf('/login') !== -1) {
-                    window.location.href = '/auth/login/';
+                if (finalUrl.indexOf('/dash/auth/login') !== -1 || finalUrl.indexOf('/login') !== -1) {
+                    window.location.href = '/dash/auth/login/';
                     // Return a synthetic "session expired" JSON so callers
                     // don't fail with a JSON-parse error on the HTML body.
                     return new Response(JSON.stringify({
@@ -59,11 +59,11 @@
                         if (data && data.redirect) {
                             window.location.href = data.redirect;
                         } else {
-                            window.location.href = '/auth/login/';
+                            window.location.href = '/dash/auth/login/';
                         }
                     })
                     .catch(function () {
-                        window.location.href = '/auth/login/';
+                        window.location.href = '/dash/auth/login/';
                     });
             }
             if (response.status === 403) {
@@ -148,7 +148,7 @@
 
         _csrfRefreshPromise = new Promise(function (resolve) {
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', '/panel/auth/api/auth/session-refresh/', true);
+            xhr.open('GET', '/dash/auth/api/auth/session-refresh/', true);
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             xhr.timeout = 8000;
 

@@ -151,7 +151,10 @@ INSTALLED_APPS = [
     'django.contrib.sites',
 ]
 
-if DEBUG:
+import sys
+IS_RUNNING_TESTS = 'test' in sys.argv or 'pytest' in sys.argv
+
+if DEBUG and not IS_RUNNING_TESTS:
     INSTALLED_APPS += ['debug_toolbar']
 
 SITE_ID = 1
@@ -167,7 +170,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
 ]
 
-if DEBUG:
+if DEBUG and not IS_RUNNING_TESTS:
     MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
 
 MIDDLEWARE += [

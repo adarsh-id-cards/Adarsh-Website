@@ -16,8 +16,8 @@ def _get_panel_login_url(request=None):
     if panel_url:
         return f'{panel_url}/auth/login/'
     elif request:
-        return request.build_absolute_uri('/auth/login/')
-    return f"{getattr(settings, 'SITE_URL', 'http://localhost:8000')}/panel/auth/login/"
+        return request.build_absolute_uri('/dash/auth/login/')
+    return f"{getattr(settings, 'SITE_URL', 'http://localhost:8000')}/dash/auth/login/"
 
 def build_unified_email_html(theme='system', title='Notification', body_html='', cta_label='', cta_url='', request=None):
     """Minimal email template shell."""

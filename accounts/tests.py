@@ -1272,7 +1272,7 @@ class ImpersonationApiTests(TestCase):
         )
         self.assertEqual(start.status_code, 200)
 
-        response = self.client.post('/panel/auth/logout/', {'next': '/app/'})
+        response = self.client.post('/dash/auth/logout/', {'next': '/app/'})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], '/app/')
 

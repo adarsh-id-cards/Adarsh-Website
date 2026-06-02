@@ -143,7 +143,7 @@ urlpatterns += [
     # ==================== ADMIN PANEL (/panel/) ====================
     # All internal/admin routes live under /panel/
     path('panel/', include('core.urls')),
-    path('panel/auth/', include('accounts.urls')),
+    path('dash/auth/', include('accounts.urls')),
 
     # ==================== MANAGE WEBSITE (/dash) ====================
     # Website management dashboard on main domain (adarshbhopal.in/dash)

@@ -8,6 +8,7 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('inactive/', views.inactive_view, name='inactive'),
     path('maintenance/', views.maintenance_view, name='maintenance'),
+    path('api/auth/check-maintenance/', views.api_check_maintenance, name='api_check_maintenance'),
     
     path('api/auth/check-email/', csrf_exempt(views.api_check_email), name='api_check_email'),
     path('api/auth/login/', csrf_exempt(views.api_login), name='api_login'),

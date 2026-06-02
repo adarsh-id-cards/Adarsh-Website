@@ -463,20 +463,16 @@
             <span class="wa-section-bar-left"><i class="fa-solid fa-circle-info"></i> Basic Info</span>
             {% if is_admin or is_pro or perm_website_edit %}
             <span class="wa-section-bar-actions">
-                <button type="button" class="btn btn-primary btn-sm wa-section-save-btn" data-fields="site_name,tagline">
+                <button type="button" class="btn btn-primary btn-sm wa-section-save-btn" data-fields="site_name">
                     <i class="fa-solid fa-save"></i> Save Changes
                 </button>
             </span>
             {% endif %}
         </div>
         <div class="wa-form-row">
-            <div class="wa-form-group">
+            <div class="wa-form-group full">
                 <label for="site_name">Business Name</label>
                 <input type="text" id="site_name" name="site_name" value="{{ business.site_name|default:'' }}" placeholder="Adarsh ID Cards">
-            </div>
-            <div class="wa-form-group">
-                <label for="tagline">Tagline</label>
-                <input type="text" id="tagline" name="tagline" value="{{ business.tagline|default:'' }}" placeholder="Your tagline here">
             </div>
         </div>
 

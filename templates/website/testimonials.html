@@ -19,7 +19,7 @@
                     <span>{% if avg_rating %}{{ avg_rating|floatformat:1 }}{% else %}5.0{% endif %}/5 Average Rating</span>
                 </div>
                 <h1>What Our <span class="gradient-text">Clients Say</span></h1>
-                <p class="hero-subtitle">Real stories from schools across the nation. Discover why {{ total_reviews|default:'500' }}+ institutions trust {{ site_name }}.</p>
+                <p class="hero-subtitle">Genuine stories of satisfaction and trust from leading educational and corporate organizations nationwide. Discover why {{ total_reviews|default:'500' }}+ partners choose {{ site_name }}.</p>
                 <div class="hero-buttons" style="margin-top: 1.5rem;">
                     <a href="#writeReview" class="btn btn-primary" id="heroWriteReviewBtn">
                         {% if can_submit_public_review %}

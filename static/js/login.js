@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setButtonLoading(this, true);
         
         try {
-            const data = await safePost('/api/auth/check-email/', { email });
+            const data = await safePost('/dash/auth/api/auth/check-email/', { email });
             if (data.success) {
                 userName = data.user_name;
                 document.getElementById('displayUserName').textContent = userName;
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setButtonLoading(this, true);
         
         try {
-            let data = await safePost('/api/auth/login/', { email, password });
+            let data = await safePost('/dash/auth/api/auth/login/', { email, password });
 
             if (!data.success && data.session_limit_hit && data.can_force_logout_other) {
                 const deviceText = formatActiveDeviceList(data.active_session_devices);
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const shouldTakeover = window.confirm(promptText);
                 if (shouldTakeover) {
-                    data = await safePost('/api/auth/login/', {
+                    data = await safePost('/dash/auth/api/auth/login/', {
                         email,
                         password,
                         force_logout_other: true,
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setButtonLoading(btnLogin, true);
         
         try {
-            const data = await safePost('/api/auth/forgot-password/', { email });
+            const data = await safePost('/dash/auth/api/auth/forgot-password/', { email });
             if (data.success) {
                 // Show OTP step
                 goToStep(3);
@@ -303,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     btnResendOtp.addEventListener('click', async function() {
         try {
-            const data = await safePost('/api/auth/forgot-password/', { email });
+            const data = await safePost('/dash/auth/api/auth/forgot-password/', { email });
             if (data.success) {
                 showMessage('OTP sent successfully!', 'success');
                 startResendTimer();
@@ -327,7 +327,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setButtonLoading(this, true);
         
         try {
-            const data = await safePost('/api/auth/verify-otp/', { email, otp });
+            const data = await safePost('/dash/auth/api/auth/verify-otp/', { email, otp });
             if (data.success) {
                 resetToken = data.reset_token;
                 goToStep(4);
@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setButtonLoading(this, true);
         
         try {
-            const data = await safePost('/api/auth/reset-password/', {
+            const data = await safePost('/dash/auth/api/auth/reset-password/', {
                 email,
                 reset_token: resetToken,
                 new_password: newPassword,

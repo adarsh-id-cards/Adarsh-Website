@@ -251,6 +251,7 @@ class PermissionValidationMiddleware:
         '/robots.txt',
         '/sitemap.xml',
         '/panel-entry/',
+        '/dash/auth/',
     ]
     
     def __init__(self, get_response):
@@ -284,7 +285,7 @@ class PermissionValidationMiddleware:
                 prefix = self._panel_prefix(request)
                 # Preserve the original URL in ?next= so user returns here after login
                 next_url = request.get_full_path()
-                return redirect(f'{prefix}/auth/login/?next={quote(next_url, safe="/")}')
+                return redirect(f'/dash/auth/login/?next={quote(next_url, safe="/")}')
             return self.get_response(request)
 
         # Fast fail-closed for users deactivated since their last request.
@@ -709,7 +710,7 @@ class SessionIdleTimeoutMiddleware:
         logger.info("SessionExpiry: user=%s reason=%s", username, reason)
         logout(request)
 
-        prefix = '' if getattr(request, '_is_panel_subdomain', False) else '/panel'
+        prefix = '' if getattr(request, '_is_panel_subdomain', False) else '/dash'
         login_url = f'{prefix}/auth/login/'
 
         is_ajax = (

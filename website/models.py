@@ -50,7 +50,6 @@ class BusinessDetails(models.Model):
     """
     # Basic Info
     site_name = models.CharField(max_length=255, default='Adarsh ID Cards')
-    tagline = models.CharField(max_length=500, blank=True)
     
     # Contact Info
     address = models.CharField(max_length=500, blank=True)

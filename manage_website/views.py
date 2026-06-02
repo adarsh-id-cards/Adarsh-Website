@@ -73,7 +73,7 @@ def _permission_denied_for_website(request, message='Website access denied'):
 def _auth_required_for_website(request):
     if _is_ajax_or_api_request(request):
         return JsonResponse({'success': False, 'message': 'Authentication required'}, status=401)
-    return redirect('/accounts/login/')
+    return redirect(f'/dash/auth/login/?next={request.path}')
 
 
 def _website_permission_required(*permission_names, denied_message='Website access denied'):

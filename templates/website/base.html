@@ -7,7 +7,7 @@
     <style>html { scroll-behavior: smooth; }</style>
     
     <!-- SEO Meta Tags -->
-    <title>{% if meta_title %}{{ meta_title }}{% else %}{{ site_name }} | {{ business.tagline|default:'Professional ID Card Solutions' }}{% endif %}</title>
+    <title>{% if meta_title %}{{ meta_title }}{% else %}{{ site_name }} | Professional ID Card Solutions{% endif %}</title>
     <meta name="description" content="{% if meta_description %}{{ meta_description }}{% else %}Professional ID Card and Lanyard Printing Solutions in Bhopal. Trusted by 1000+ institutions.{% endif %}">
     <meta name="keywords" content="Adarsh ID Cards, Adarsh Bhopal, ID Card Printing Bhopal, Custom Lanyards Bhopal, School ID Cards MP, Identity Solutions Madhya Pradesh, PVC ID Card Manufacturer, RFID Cards Bhopal, Digital Lanyard Printing, School Stationery Suppliers Bhopal">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
@@ -165,7 +165,7 @@
                 <div class="logo">
                     <a href="{% url 'website:home' %}" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit;">
                         <div class="logo-box">
-                            <img src="{% static 'website/images/adarsh.png' %}" alt="Adarsh Logo" class="logo-img" width="42" height="42" fetchpriority="high" decoding="async">
+                            <img src="{% static 'assets/logo.png' %}" alt="Adarsh Logo" class="logo-img-3d" width="32" height="32" fetchpriority="high" decoding="async">
                         </div>
                         <span class="logo-text">{{ site_name }}</span>
                     </a>
@@ -208,7 +208,7 @@
                 <div class="footer-section">
                     <div class="footer-brand" aria-label="Brand identity" style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;">
                         <div class="logo-box">
-                            <img src="{% static 'website/images/adarsh.png' %}" alt="Adarsh Logo" class="logo-img" width="42" height="42" loading="lazy" decoding="async">
+                            <img src="{% static 'assets/logo.png' %}" alt="Adarsh Logo" class="logo-img-3d" width="32" height="32" loading="lazy" decoding="async">
                         </div>
                         <span class="logo-text">{{ site_name }}</span>
                     </div>

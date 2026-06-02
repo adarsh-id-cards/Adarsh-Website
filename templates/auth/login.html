@@ -5,15 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="index, follow">
-    <title>Panel Login | Adarsh ID Cards - Secure Management Portal</title>
+    <title>Login | Adarsh ID Cards — Secure Management Portal</title>
     <meta name="description" content="Access the Adarsh ID Cards secure management portal. Log in to manage student ID cards, staff identity solutions, and professional printing services in Bhopal, MP.">
     
     <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Panel Login | Adarsh ID Cards">
+    <meta property="og:title" content="Login | Adarsh ID Cards">
     <meta property="og:description" content="Secure management portal for Adarsh ID Cards. Manage identification solutions for schools and organizations in Bhopal, Madhya Pradesh.">
     <meta property="og:image" content="{% static 'website/images/adarsh.png' %}">
 
+    <link rel="icon" type="image/x-icon" href="{% static 'assets/favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'css/vendor/fontawesome/all.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
     <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
@@ -37,9 +38,16 @@
     }
     </script>
 </head>
-<body class="auth-page font-sans min-h-screen flex items-center justify-center p-5">
-  <main id="main-content" class="w-full max-w-[600px] max-h-[90vh] flex flex-col">
-        <div class="login-card bg-[rgba(30,32,48,0.95)] py-7 px-9 shadow-md border border-[rgba(102,126,234,0.2)] backdrop-blur-[20px] max-h-[90vh] overflow-y-auto">
+<body class="auth-page min-h-screen flex items-center justify-center p-5">
+    <!-- Animated Background Mesh -->
+    <div class="auth-bg-mesh" aria-hidden="true">
+        <div class="auth-orb auth-orb--1"></div>
+        <div class="auth-orb auth-orb--2"></div>
+        <div class="auth-orb auth-orb--3"></div>
+    </div>
+
+    <main id="main-content" class="w-full max-w-[440px] flex flex-col">
+        <div class="login-card py-9 px-8 overflow-y-auto">
             {% include 'partials/auth/login-header.html' %}
             {% include 'partials/auth/login-step-indicator.html' %}
             {% include 'partials/auth/login-step2-email.html' %}
