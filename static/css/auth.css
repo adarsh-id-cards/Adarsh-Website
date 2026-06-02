@@ -1,741 +1,216 @@
-/* ==========================================================================
-   Auth Page — Premium Redesign
-   Dark-space aesthetic with animated gradient mesh, glassmorphism,
-   gold-amber & electric-indigo accents.
-   ========================================================================== */
+/* ===========================
+   Auth Page Styles
+   Only rules that cannot be expressed as Tailwind utilities
+   =========================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
-
-/* ── Design Tokens ── */
+/* CSS Custom Properties */
 :root {
-    --auth-bg: #070810;
-    --auth-card-bg: rgba(12, 14, 26, 0.72);
-    --auth-card-border: rgba(255, 255, 255, 0.06);
-    --auth-primary: #f59e0b;
-    --auth-primary-soft: rgba(245, 158, 11, 0.12);
-    --auth-primary-hover: #fbbf24;
-    --auth-secondary: #818cf8;
-    --auth-secondary-soft: rgba(129, 140, 248, 0.12);
-
-    --auth-text: #f1f5f9;
-    --auth-text-sub: #94a3b8;
-    --auth-text-muted: #64748b;
-    --auth-text-dim: #475569;
-
-    --auth-success: #34d399;
-    --auth-error: #f87171;
-    --auth-warning: #fbbf24;
-
-    --auth-radius-sm: 10px;
-    --auth-radius-md: 14px;
-    --auth-radius-lg: 22px;
-    --auth-radius-xl: 28px;
-
-    --auth-transition: cubic-bezier(0.4, 0, 0.2, 1);
+    --auth-primary: var(--color-primary);
+    --auth-primary-dark: var(--color-primary-dark);
+    --auth-primary-light: var(--primary-light);
+    --auth-bg: linear-gradient(135deg, #1a1c2e 0%, #2d1f3d 50%, #1a1c2e 100%);
+    --auth-card-bg: rgba(30, 32, 48, 0.95);
+    --auth-text-primary: var(--color-gray-50);
+    --auth-text-secondary: var(--color-slate-400);
+    --auth-text-muted: var(--color-slate-500);
+    --auth-border: rgba(var(--primary-rgb), 0.2);
+    --auth-success: var(--color-green-500);
+    --auth-error: #fc8181;
+    --auth-warning: var(--color-orange-400);
 }
 
-/* ── Base Page ── */
+/* Body background gradient */
 body.auth-page {
-    font-family: 'Outfit', system-ui, -apple-system, sans-serif;
     background: var(--auth-bg);
-    color: var(--auth-text);
-    overflow-x: hidden;
-    min-height: 100vh;
-    position: relative;
 }
 
-/* ── Animated Mesh Background ── */
-.auth-bg-mesh {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    overflow: hidden;
-    pointer-events: none;
-}
-
-.auth-bg-mesh::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(ellipse 80% 60% at 10% 20%, rgba(99, 102, 241, 0.10) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 85% 75%, rgba(245, 158, 11, 0.07) 0%, transparent 55%),
-        radial-gradient(ellipse 70% 40% at 50% 5%, rgba(129, 140, 248, 0.05) 0%, transparent 50%);
-}
-
-/* Floating Orbs */
-.auth-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.5;
-    will-change: transform;
-}
-.auth-orb--1 {
-    width: 340px; height: 340px;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.22) 0%, transparent 70%);
-    top: -80px; left: -60px;
-    animation: orbFloat1 18s ease-in-out infinite;
-}
-.auth-orb--2 {
-    width: 280px; height: 280px;
-    background: radial-gradient(circle, rgba(245, 158, 11, 0.18) 0%, transparent 70%);
-    bottom: -60px; right: -40px;
-    animation: orbFloat2 22s ease-in-out infinite;
-}
-.auth-orb--3 {
-    width: 200px; height: 200px;
-    background: radial-gradient(circle, rgba(129, 140, 248, 0.12) 0%, transparent 70%);
-    top: 40%; left: 60%;
-    animation: orbFloat3 15s ease-in-out infinite;
-}
-
-@keyframes orbFloat1 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    33%      { transform: translate(40px, 30px) scale(1.08); }
-    66%      { transform: translate(-20px, 50px) scale(0.95); }
-}
-@keyframes orbFloat2 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    40%      { transform: translate(-50px, -30px) scale(1.1); }
-    70%      { transform: translate(30px, -50px) scale(0.92); }
-}
-@keyframes orbFloat3 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50%      { transform: translate(-30px, 40px) scale(1.12); }
-}
-
-/* Subtle grid overlay */
-.auth-bg-mesh::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-        linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
-    background-size: 64px 64px;
-}
-
-/* ── Main Content Wrapper ── */
-#main-content {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 440px;
-    margin: 0 auto;
-    animation: cardEntrance 0.7s var(--auth-transition) both;
-}
-
-@keyframes cardEntrance {
-    from {
-        opacity: 0;
-        transform: translateY(24px) scale(0.97);
-        filter: blur(6px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-    }
-}
-
-/* ── Premium Glassmorphic Card ── */
-.login-card {
-    width: 100%;
-    max-width: 440px;
-    box-sizing: border-box;
-    background: var(--auth-card-bg);
-    backdrop-filter: blur(32px) saturate(180%);
-    -webkit-backdrop-filter: blur(32px) saturate(180%);
-    border: 1px solid var(--auth-card-border);
-    border-radius: var(--auth-radius-xl);
-    box-shadow:
-        0 32px 64px -16px rgba(0, 0, 0, 0.65),
-        0 0 0 1px rgba(255, 255, 255, 0.04) inset,
-        0 1px 0 0 rgba(255, 255, 255, 0.06) inset;
-    transition: border-color 0.5s var(--auth-transition), box-shadow 0.5s var(--auth-transition);
-    position: relative;
-    overflow: hidden;
-}
-
-/* Top accent glow bar */
-.login-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60%;
-    height: 1px;
-    background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(245, 158, 11, 0.5) 30%,
-        rgba(129, 140, 248, 0.5) 70%,
-        transparent 100%
-    );
-}
-
-.login-card:hover {
-    border-color: rgba(245, 158, 11, 0.15);
-    box-shadow:
-        0 36px 72px -12px rgba(0, 0, 0, 0.7),
-        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-        0 1px 0 0 rgba(255, 255, 255, 0.08) inset,
-        0 0 60px -10px rgba(245, 158, 11, 0.04);
-}
-
-/* ── 3D Rotating Gold Logo Box ── */
-.logo-box {
-    width: 58px;
-    height: 58px;
-    background: linear-gradient(145deg, #fef9c3 0%, #fde68a 100%);
-    border: 1.5px solid rgba(245, 158, 11, 0.5);
-    box-shadow:
-        0 0 24px 0 rgba(245, 158, 11, 0.25),
-        0 8px 16px -4px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-    border-radius: var(--auth-radius-md);
-    perspective: 800px;
-    transition: transform 0.35s var(--auth-transition), box-shadow 0.35s var(--auth-transition);
-}
-.logo-box:hover {
-    transform: scale(1.1);
-    box-shadow:
-        0 0 32px 0 rgba(245, 158, 11, 0.35),
-        0 12px 24px -4px rgba(0, 0, 0, 0.25),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-.logo-box img {
-    width: 38px;
-    height: 38px;
-    animation: rotateLogo3D 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-    transform-style: preserve-3d;
-}
-@keyframes rotateLogo3D {
-    0%   { transform: rotateY(0deg); }
-    15%  { transform: rotateY(180deg); }
-    30%  { transform: rotateY(360deg); }
-    100% { transform: rotateY(360deg); }
-}
-
-/* ── Header Typography ── */
-.auth-title {
-    color: var(--auth-text);
-    font-size: 1.35rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.3;
-    margin-bottom: 0.25rem;
-}
-.auth-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    border-radius: 20px;
-    background: var(--auth-primary-soft);
-    border: 1px solid rgba(245, 158, 11, 0.15);
-    color: var(--auth-primary);
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-.auth-badge::before {
-    content: '';
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--auth-primary);
-    box-shadow: 0 0 6px var(--auth-primary);
-    animation: badgePulse 2s ease-in-out infinite;
-}
-@keyframes badgePulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%      { opacity: 0.5; transform: scale(0.8); }
-}
-
-/* ── Step Title & Subtitle ── */
-.step-title {
-    color: var(--auth-text);
-    font-size: 1.05rem;
-    font-weight: 600;
-    text-align: center;
-    margin-bottom: 0.3rem;
-    letter-spacing: -0.01em;
-}
-.step-subtitle {
-    color: var(--auth-text-muted);
-    font-size: 0.8rem;
-    font-weight: 400;
-    text-align: center;
-    margin-bottom: 1.5rem;
-    line-height: 1.55;
-}
-
-/* ── Form Controls & Input Styling ── */
-.auth-input-group {
-    position: relative;
-    margin-bottom: 1.25rem;
-}
-.auth-input-label {
-    display: block;
-    color: var(--auth-text-sub);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    margin-bottom: 0.5rem;
-}
-.auth-input-group input {
-    width: 100%;
-    padding: 0.8rem 1rem 0.8rem 2.75rem;
-    background: rgba(15, 23, 42, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: var(--auth-radius-md);
-    color: var(--auth-text);
-    font-size: 0.88rem;
-    font-family: inherit;
-    font-weight: 400;
-    transition: all 0.35s var(--auth-transition);
-    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.2) inset;
-}
-.auth-input-group input::placeholder {
-    color: var(--auth-text-dim);
-    font-weight: 300;
-}
-.auth-input-group input:focus {
-    outline: none;
-    border-color: rgba(245, 158, 11, 0.45);
-    background: rgba(15, 23, 42, 0.7);
-    box-shadow:
-        0 0 0 3px rgba(245, 158, 11, 0.08),
-        0 0 20px -4px rgba(245, 158, 11, 0.15),
-        0 2px 8px -2px rgba(0, 0, 0, 0.2) inset;
-}
-.auth-input-group i.input-icon {
-    position: absolute;
-    left: 1rem;
-    bottom: 0.85rem;
-    color: var(--auth-text-dim);
-    font-size: 0.9rem;
-    transition: color 0.3s var(--auth-transition);
-    pointer-events: none;
-}
-.auth-input-group input:focus ~ i.input-icon {
-    color: var(--auth-primary);
-}
-
-/* Password Toggle Icon */
-.pass-toggle {
-    position: absolute;
-    right: 0.85rem;
-    bottom: 0.6rem;
-    background: transparent;
-    border: none;
-    color: var(--auth-text-dim);
-    cursor: pointer;
-    padding: 0.25rem;
-    font-size: 0.88rem;
-    transition: color 0.3s var(--auth-transition);
-    z-index: 2;
-}
-.pass-toggle:hover {
-    color: var(--auth-text-sub);
-}
-
-/* ── Premium Buttons ── */
-.btn-auth-primary {
-    width: 100%;
-    padding: 0.8rem 1.5rem;
-    border: none;
-    border-radius: var(--auth-radius-md);
-    background: linear-gradient(135deg, var(--auth-primary) 0%, #d97706 100%);
-    color: #0a0b14;
-    font-size: 0.88rem;
-    font-weight: 700;
-    font-family: inherit;
-    cursor: pointer;
-    letter-spacing: 0.01em;
-    box-shadow:
-        0 4px 20px -4px rgba(245, 158, 11, 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    transition: all 0.35s var(--auth-transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    position: relative;
-    overflow: hidden;
-}
-.btn-auth-primary::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-.btn-auth-primary:hover {
-    transform: translateY(-2px);
-    box-shadow:
-        0 8px 28px -4px rgba(245, 158, 11, 0.45),
-        inset 0 1px 0 rgba(255, 255, 255, 0.25);
-    background: linear-gradient(135deg, var(--auth-primary-hover) 0%, var(--auth-primary) 100%);
-}
-.btn-auth-primary:hover::after {
-    opacity: 1;
-}
-.btn-auth-primary:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 12px -2px rgba(245, 158, 11, 0.3);
-}
-.btn-auth-primary:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.btn-auth-secondary {
-    width: 100%;
-    padding: 0.7rem 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: var(--auth-radius-md);
-    background: rgba(255, 255, 255, 0.02);
-    color: var(--auth-text-sub);
-    font-size: 0.82rem;
-    font-weight: 500;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.3s var(--auth-transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-.btn-auth-secondary:hover {
-    border-color: rgba(255, 255, 255, 0.14);
-    color: var(--auth-text);
-    background: rgba(255, 255, 255, 0.04);
-}
-
-/* ── Step Indicator Track ── */
-.step-track {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 1.25rem;
-    padding: 0.5rem 0;
-}
-.step-dot {
+/* Scrollbar */
+.login-card::-webkit-scrollbar {
     width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    transition: all 0.45s var(--auth-transition);
-    position: relative;
+}
+.login-card::-webkit-scrollbar-track {
+    background: transparent;
+}
+.login-card::-webkit-scrollbar-thumb {
+    background: rgba(var(--primary-rgb), 0.3);
+    border-radius: 3px;
+}
+
+/* Step dots – JS-toggled states */
+.step-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 8px;
+    background: var(--auth-border);
+    transition: all 0.3s ease;
 }
 .step-dot.active {
-    background: var(--auth-primary);
-    box-shadow: 0 0 12px 2px rgba(245, 158, 11, 0.35);
+    background: linear-gradient(135deg, var(--color-primary), var(--secondary));
     width: 24px;
     border-radius: 4px;
 }
 .step-dot.completed {
     background: var(--auth-success);
-    box-shadow: 0 0 8px 1px rgba(52, 211, 153, 0.3);
 }
 
-/* ── Dynamic Multistep Transitions ── */
+/* Step visibility & animation – JS-toggled */
 .login-step {
     display: none;
-    animation: stepSlideIn 0.45s var(--auth-transition);
+    animation: fadeIn 0.3s ease;
 }
 .login-step.active {
     display: block;
 }
-@keyframes stepSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(14px) scale(0.97);
-        filter: blur(3px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-    }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── User Display Card (Password Step) ── */
-.auth-user-card {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: var(--auth-radius-md);
-    margin-bottom: 1.15rem;
-    transition: border-color 0.3s;
+/* Role option – selected compound state (JS-toggled) */
+.role-option.selected {
+    border-color: var(--color-primary);
+    background: rgba(var(--primary-rgb), 0.18);
+    box-shadow: none;
 }
-.auth-user-card:hover {
-    border-color: rgba(255, 255, 255, 0.08);
-}
-.auth-user-card .user-avatar-icon {
-    font-size: 1.65rem;
-    color: var(--auth-primary);
-    opacity: 0.85;
-}
-.auth-user-card .user-name {
-    color: var(--auth-text);
-    font-size: 0.88rem;
-    font-weight: 600;
-    line-height: 1.3;
-}
-.auth-user-card .user-email {
-    color: var(--auth-text-muted);
-    font-size: 0.72rem;
-    margin-top: 0.1rem;
+.role-option.selected .role-check {
+    border-color: var(--color-primary);
+    background: linear-gradient(135deg, var(--color-primary), var(--secondary));
+    color: white;
 }
 
-/* ── Forgot Password Link ── */
-.auth-forgot-link {
-    display: block;
-    text-align: right;
-    margin-bottom: 1rem;
-    background: transparent;
-    border: none;
-    color: var(--auth-secondary);
-    font-size: 0.75rem;
-    font-weight: 500;
-    font-family: inherit;
-    cursor: pointer;
-    padding: 0;
-    transition: color 0.3s;
-}
-.auth-forgot-link:hover {
-    color: #a5b4fc;
-}
-
-/* ── Micro OTP Boxes ── */
+/* OTP input fields */
 .otp-inputs {
     display: flex;
-    gap: 0.55rem;
+    gap: 10px;
     justify-content: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 20px;
 }
 .otp-inputs input {
-    width: 44px;
-    height: 50px;
+    width: 42px;
+    height: 46px;
     text-align: center;
-    font-size: 1.35rem;
-    font-weight: 700;
-    font-family: inherit;
-    background: rgba(15, 23, 42, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: var(--auth-radius-sm);
-    color: var(--auth-text);
-    transition: all 0.3s var(--auth-transition);
-    caret-color: var(--auth-primary);
+    font-size: var(--ui-font-size-3xl, 20px);
+    font-weight: 600;
+    background: rgba(var(--primary-rgb), 0.05);
+    border: 1px solid var(--auth-border);
+    border-radius: 0;
+    color: var(--auth-text-primary);
+    transition: all 0.2s ease;
 }
 .otp-inputs input:focus {
     outline: none;
-    border-color: rgba(245, 158, 11, 0.45);
-    background: rgba(15, 23, 42, 0.7);
-    box-shadow:
-        0 0 0 3px rgba(245, 158, 11, 0.08),
-        0 0 16px -4px rgba(245, 158, 11, 0.18);
-    transform: translateY(-2px);
+    border-color: var(--color-primary);
+    background: rgba(var(--primary-rgb), 0.1);
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1);
 }
 
-/* ── Resend OTP Link ── */
-.auth-resend-link {
-    color: var(--auth-secondary);
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    padding: 0;
-    background: transparent;
-    border: none;
-    font-family: inherit;
-    transition: color 0.3s;
-}
-.auth-resend-link:hover {
-    color: #a5b4fc;
-}
-.auth-resend-link:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-    color: var(--auth-text-muted);
-}
-
-/* ── Premium System Notice & Error Popups ── */
+/* Message states – JS-toggled */
 .message {
-    padding: 0.7rem 1rem;
-    border-radius: var(--auth-radius-sm);
-    font-size: 0.8rem;
-    font-weight: 500;
-    margin-bottom: 1.15rem;
+    padding: 10px 14px;
+    border-radius: 0;
+    font-size: var(--ui-font-size-md, 13px);
+    margin-bottom: 14px;
     display: none;
-    animation: alertPop 0.35s var(--auth-transition);
-    line-height: 1.5;
-}
-@keyframes alertPop {
-    from { opacity: 0; transform: scale(0.96) translateY(-4px); }
-    to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 .message.error {
-    background: rgba(248, 113, 113, 0.08);
-    border: 1px solid rgba(248, 113, 113, 0.2);
-    color: #fca5a5;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    background: rgba(252, 129, 129, 0.12);
+    border: 1px solid rgba(252, 129, 129, 0.35);
+    color: var(--color-red-300);
+    display: block;
 }
 .message.success {
-    background: rgba(52, 211, 153, 0.08);
-    border: 1px solid rgba(52, 211, 153, 0.2);
-    color: #6ee7b7;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    background: rgba(72, 187, 120, 0.12);
+    border: 1px solid rgba(72, 187, 120, 0.35);
+    color: #9ae6b4;
+    display: block;
 }
 
-/* ── Loading Spinner ── */
+/* Spinner animation */
 .spinner {
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
     border: 2px solid transparent;
-    border-top-color: #0a0b14;
-    border-radius: 50%;
-    animation: spinRotate 0.65s linear infinite;
-    display: inline-block;
+    border-top-color: white;
+    border-radius: 8px;
+    animation: spin 0.8s linear infinite;
 }
-@keyframes spinRotate {
+@keyframes spin {
     to { transform: rotate(360deg); }
 }
 
-/* ── Card Custom Scrollbar ── */
-.login-card::-webkit-scrollbar { width: 4px; }
-.login-card::-webkit-scrollbar-track { background: transparent; }
-.login-card::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
+/* Resend timer */
+.resend-timer {
+    text-align: center;
+    color: var(--auth-text-muted);
+    font-size: var(--ui-font-size-md, 13px);
+    margin-top: 14px;
 }
-.login-card::-webkit-scrollbar-thumb:hover {
-    background: rgba(245, 158, 11, 0.2);
+.resend-timer button {
+    color: var(--primary-light);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+.resend-timer button:disabled {
+    color: var(--auth-text-muted);
+    cursor: not-allowed;
 }
 
-/* ── Developer OTP Box ── */
+/* Dev OTP display */
 .dev-otp {
-    background: rgba(245, 158, 11, 0.06);
-    border: 1px dashed rgba(245, 158, 11, 0.2);
-    padding: 0.7rem;
-    border-radius: var(--auth-radius-sm);
+    background: rgba(246, 173, 85, 0.12);
+    border: 1px solid rgba(246, 173, 85, 0.35);
+    padding: 10px;
+    border-radius: 0;
     text-align: center;
-    margin-bottom: 1.15rem;
+    margin-bottom: 14px;
 }
 .dev-otp span {
-    color: var(--auth-text-muted);
-    font-size: 0.65rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    color: var(--color-orange-400);
+    font-size: var(--ui-font-size-sm, 12px);
 }
 .dev-otp strong {
     display: block;
-    color: var(--auth-primary-hover);
-    font-size: 1.4rem;
-    letter-spacing: 6px;
-    margin-top: 0.25rem;
+    color: var(--color-orange-400);
+    font-size: var(--ui-font-size-3xl-lg, 22px);
+    letter-spacing: 4px;
+    margin-top: 4px;
 }
 
-/* ── Auth Footer ── */
-.auth-footer {
-    text-align: center;
-    margin-top: 1rem;
-    padding-top: 0.85rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
-}
-.auth-footer p {
-    color: var(--auth-text-dim);
-    font-size: 0.68rem;
-    font-weight: 400;
-    letter-spacing: 0.02em;
-}
-.auth-footer a {
-    color: var(--auth-text-muted);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.3s;
-}
-.auth-footer a:hover {
-    color: var(--auth-primary);
-}
-
-/* ── Account Suspended / Maintenance Pulse ── */
+/* ── Maintenance page ── */
 .maintenance-pulse {
-    animation: pulseGlowRing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    animation: pulse-ring 2s ease-in-out infinite;
 }
-@keyframes pulseGlowRing {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.25); }
-    50%       { box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); }
+@keyframes pulse-ring {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(var(--yellow-rgb), 0.3); }
+    50%       { box-shadow: 0 0 0 12px rgba(var(--yellow-rgb), 0); }
 }
 .status-dot {
     display: inline-block;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--auth-primary);
+    width: 8px;
+    height: 8px;
+    border-radius: 8px;
+    background: var(--color-warning);
     margin-right: 6px;
-    animation: blinkGlowDot 1.6s ease-in-out infinite;
+    animation: blink-dot 1.5s ease-in-out infinite;
 }
-@keyframes blinkGlowDot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%       { opacity: 0.3; transform: scale(0.85); }
+@keyframes blink-dot {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
 }
-.live-status-bar {
-    background: rgba(15, 23, 42, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: var(--auth-radius-sm);
-    padding: 0.7rem 1rem;
-    margin-top: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-    color: var(--auth-text-sub);
+.maintenance-status-bar {
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-slate-200);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
 }
-.live-status-bar.is-complete {
-    border-color: rgba(52, 211, 153, 0.25);
-    background: rgba(52, 211, 153, 0.05);
-    color: #a7f3d0;
-}
-.live-status-bar.is-complete .status-dot {
-    background: var(--auth-success);
-    animation: none;
+.maintenance-status-bar span {
+    font-size: 0.8125rem;
+    color: var(--color-slate-600);
+    font-weight: 500;
 }
 
-/* ── Responsive ── */
-@media (max-width: 480px) {
-    #main-content {
-        max-width: 100%;
-    }
-    .login-card {
-        border-radius: var(--auth-radius-lg);
-        max-width: 100%;
-    }
-    .otp-inputs input {
-        width: 40px;
-        height: 46px;
-        font-size: 1.2rem;
-    }
-}
