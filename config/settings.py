@@ -164,9 +164,6 @@ SITE_ID = 1
 AUTH_USER_MODEL = 'core.User'
 
 MIDDLEWARE = [
-    # Subdomain routing — sets request.urlconf based on Host header
-    # MUST be first so all downstream middleware see the correct URL conf
-    'core.middleware.SubdomainRoutingMiddleware',
     "django.middleware.security.SecurityMiddleware",
 ]
 
@@ -186,8 +183,6 @@ MIDDLEWARE += [
     'django.contrib.messages.middleware.MessageMiddleware',
     # Request timing — logs duration, slow-request warnings (>1.5 s)
     'core.middleware.RequestTimingMiddleware',
-    # Panel entry gate — require website panel-button flow for anonymous panel access
-    'core.middleware.PanelEntryGateMiddleware',
     # Permission Validation Middleware - re-checks permissions on every request
     # CRITICAL: Must come after AuthenticationMiddleware
     'core.middleware.PermissionValidationMiddleware',
@@ -201,6 +196,8 @@ MIDDLEWARE += [
     # Website Offline Middleware — blocks public site when status is 'draft'
     'core.middleware.WebsiteOfflineMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Traffic reach and channel analytics tracker middleware
+    'core.middleware.TrafficTrackerMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -548,7 +545,7 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage" if IS_RUNNING_TESTS else "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 

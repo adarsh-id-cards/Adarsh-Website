@@ -274,12 +274,12 @@ a:active {
     width: 45px;
     height: 45px;
     border-radius: 10px !important;
-    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-    border: 1px solid rgba(251, 191, 36, 0.28);
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+    border: 1px solid rgba(229, 62, 62, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.15), inset 0 1px 0 rgba(255,255,255,0.6);
+    box-shadow: 0 4px 12px rgba(229, 62, 62, 0.15), inset 0 1px 0 rgba(255,255,255,0.6);
     perspective: 600px;
     flex-shrink: 0;
     padding: 0;
@@ -288,9 +288,9 @@ a:active {
 
 .logo-box:hover {
     transform: scale(1.05);
-    background: linear-gradient(135deg, #fefce8 0%, #fde68a 100%);
-    box-shadow: 0 6px 18px rgba(251, 191, 36, 0.25), inset 0 1px 0 rgba(255,255,255,0.8);
-    border-color: rgba(251, 191, 36, 0.45);
+    background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+    box-shadow: 0 6px 18px rgba(229, 62, 62, 0.25), inset 0 1px 0 rgba(255,255,255,0.8);
+    border-color: rgba(229, 62, 62, 0.55);
 }
 
 .logo-img-3d {

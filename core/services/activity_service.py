@@ -15,7 +15,11 @@ class ActivityService:
     @staticmethod
     def _get_ip(request):
         if request is None: return None
-        return request.META.get('HTTP_X_REAL_IP') or request.META.get('REMOTE_ADDR')
+        try:
+            from accounts.rate_limit import _get_client_ip
+            return _get_client_ip(request)
+        except ImportError:
+            return request.META.get('HTTP_X_REAL_IP') or request.META.get('REMOTE_ADDR')
 
     @classmethod
     def log(cls, action, description, user=None, request=None, target_model='', target_id=None, target_name=''):
@@ -33,7 +37,21 @@ class ActivityService:
 
     @classmethod
     def log_login(cls, request, user):
-        cls.log('login', f'{user.username} logged in', user=user, request=request)
+        from accounts.services import AuthService
+        description = f'{user.username} logged in'
+        if request is not None:
+            ua = request.META.get('HTTP_USER_AGENT', '')
+            lang = request.META.get('HTTP_ACCEPT_LANGUAGE', '')
+            current_fp = AuthService.build_browser_fingerprint(ua, lang)
+            current_session_key = getattr(getattr(request, 'session', None), 'session_key', '') or ''
+            inspection = AuthService.inspect_active_sessions_for_user(
+                user.id,
+                browser_fingerprint=current_fp,
+                exclude_session_key=current_session_key
+            )
+            if inspection.get('has_different_browser'):
+                description = f'{user.username} logged in from a different browser'
+        cls.log('login', description, user=user, request=request)
 
     @classmethod
     def log_logout(cls, request, user):

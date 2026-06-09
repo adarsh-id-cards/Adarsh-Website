@@ -29,22 +29,19 @@ User = get_user_model()
 # Role mapping - Maps frontend role names to User model role values
 ROLE_MAPPING = {
     'admin': 'admin',
-    'pro': 'pro',
     'operator': 'operator',
 }
 
 # Group names for Django Groups
 GROUP_NAMES = {
     'admin': 'ADMIN',
-    'pro': 'PRO',
     'operator': 'OPERATOR',
 }
 
-# Dashboard redirect URLs based on role
+# Dashboard redirect URL — only superadmins use this login
 DASHBOARD_URLS = {
-    'admin': '/panel/',
-    'pro': '/panel/',
-    'operator': '/panel/',
+    'admin': '/dash/',
+    'operator': '/dash/',
 }
 
 # OTP settings
@@ -64,7 +61,6 @@ DEV_LOG_OTP = os.getenv('DEV_LOG_OTP', 'false').strip().lower() in ('1', 'true',
 
 _ROLE_SURFACE_LIMITS = {
     'admin': {'desktop': 9999, 'mobile': 9999},
-    'pro': {'desktop': 9999, 'mobile': 9999},
     'operator': {'desktop': 9999, 'mobile': 9999},
 }
 
@@ -510,9 +506,9 @@ class AuthService:
             return None
 
         role_filter = Q()
-        if role and role in ROLE_MAPPING:
-            if role == 'admin':
-                role_filter = Q(role__in=['admin', 'pro'])
+        if role:
+            if role in ('admin', 'super_admin'):
+                role_filter = Q(role='admin') | Q(is_superuser=True)
             else:
                 role_filter = Q(role=role)
 
@@ -557,23 +553,24 @@ class AuthService:
     def check_user_exists(identifier, role=None):
         """
         Check login preflight without disclosing whether an account exists.
+        Always returns success=True to avoid user enumeration.
         """
         try:
             identifier = _normalize_identifier(identifier)
             # Perform a lookup so timing stays consistent, but never reveal result.
             AuthService._find_user(identifier, role)
             return {
-                'exists': True,
+                'success': True,
                 'user_name': 'User',
                 'user_email': identifier,
-                'message': 'If an account exists, continue with password.'
+                'message': 'Continue with your password.'
             }
         except Exception:
             return {
-                'exists': True,
+                'success': True,
                 'user_name': 'User',
                 'user_email': identifier,
-                'message': 'If an account exists, continue with password.'
+                'message': 'Continue with your password.'
             }
     
     @staticmethod
@@ -647,6 +644,7 @@ class AuthService:
     def authenticate_user(identifier, password, role=None):
         """
         Authenticate user locally with email/username and password.
+        Only superadmin (is_superuser=True) users are allowed to log in.
         """
         try:
             identifier = _normalize_identifier(identifier)
@@ -658,18 +656,11 @@ class AuthService:
             if AuthService._is_login_blocked(identifier):
                 return {'success': False, 'message': _AUTH_FAIL_MSG}
 
-            user = AuthService._find_user(identifier, role=None)
+            user = AuthService._find_user(identifier, role=role)
 
             if not user:
                 AuthService._record_login_failure(identifier)
                 return {'success': False, 'message': _AUTH_FAIL_MSG}
-
-            # Check role if specified
-            if role and user.role != role:
-                if not (role == 'admin' and user.role == 'pro'):
-                    attempts = AuthService._record_login_failure(identifier)
-                    AuthService._maybe_notify_failed_login(user, identifier, attempts)
-                    return {'success': False, 'message': _AUTH_FAIL_MSG}
 
             if not user.is_active:
                 attempts = AuthService._record_login_failure(identifier)
@@ -692,7 +683,7 @@ class AuthService:
 
             AuthService._clear_login_failures(identifier)
 
-            redirect_url = DASHBOARD_URLS.get(user.role, '/panel/')
+            redirect_url = '/dash/'
 
             return {
                 'success': True,
@@ -710,11 +701,10 @@ class AuthService:
     
     @staticmethod
     def get_dashboard_url(user):
-        """Get the appropriate dashboard URL for a user based on their role."""
-        from core.services.permission_service import PermissionService
-        if PermissionService.is_admin(user):
-            return DASHBOARD_URLS['admin']
-        return DASHBOARD_URLS.get(user.role, '/panel/')
+        """Get the dashboard URL based on user role."""
+        if not user or not user.is_authenticated:
+            return '/'
+        return '/dash/'
 
 
 class OTPService:
@@ -1118,7 +1108,6 @@ class RoleService:
     def get_role_display_name(role):
         """Get human-readable role name."""
         role_display = {
-            'pro_user': 'Pro User',
             'super_admin': 'Super Admin',
             'admin_staff': 'Admin Staff',
             'client': 'Client',

@@ -15,9 +15,6 @@ urlpatterns = [
     path('api/auth/forgot-password/', csrf_exempt(views.api_forgot_password), name='api_forgot_password'),
     path('api/auth/verify-otp/', csrf_exempt(views.api_verify_otp), name='api_verify_otp'),
     path('api/auth/reset-password/', csrf_exempt(views.api_reset_password), name='api_reset_password'),
-    path('api/auth/impersonate/start/', csrf_exempt(views.api_impersonate_start), name='api_impersonate_start'),
-    path('api/auth/impersonate/stop/', csrf_exempt(views.api_impersonate_stop), name='api_impersonate_stop'),
-    path('api/auth/impersonate/users/', csrf_exempt(views.api_impersonate_users), name='api_impersonate_users'),
     path('api/auth/me/', views.api_get_me, name='api_get_me'),
     
     # ==================== USER MANAGEMENT API ====================
@@ -37,6 +34,8 @@ urlpatterns = [
     path('api/profile/', views.api_get_profile, name='api_get_profile'),
     path('api/profile/update/', views.api_update_profile, name='api_update_profile'),
     path('api/profile/change-password/', views.api_change_password, name='api_change_password'),
+    path('api/profile/upload-image/', views.api_upload_profile_image, name='api_upload_profile_image'),
+
 ]
 
 # Debug endpoints

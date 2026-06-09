@@ -70,14 +70,11 @@ def permissions(request):
 
     if not request.user.is_authenticated:
         base_context.update({
-            'is_pro_user': False,
             'is_super_admin': False,
             'is_admin_staff': False,
             'is_client': False,
             'is_client_staff': False,
             'is_client_admin': False,  # For backward compatibility
-            'is_impersonating': False,
-            'impersonation_original_name': '',
             'user_role': None,
         })
         return base_context
@@ -99,7 +96,6 @@ def permissions(request):
             request.user.pk,
         )
         context = {
-            'is_pro_user': False,
             'is_super_admin': False, 'is_admin_staff': False,
             'is_client': False, 'is_client_staff': False,
             'user_role': getattr(request.user, 'role', None),
@@ -107,10 +103,6 @@ def permissions(request):
     
     # Add is_client_admin for backward compatibility with client-sidebar.html
     context['is_client_admin'] = context.get('is_client', False)
-
-    # Add impersonation session state for template/UI controls.
-    context['is_impersonating'] = bool(request.session.get('_pro_original_user_id'))
-    context['impersonation_original_name'] = request.session.get('_pro_original_user_name', '')
     
     # Merge subdomain URLs
     context.update(base_context)

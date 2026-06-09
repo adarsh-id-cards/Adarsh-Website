@@ -29,14 +29,14 @@ class AuthServiceTests(TestCase):
     def test_check_user_exists_found(self):
         from accounts.services import AuthService
         result = AuthService.check_user_exists('test@example.com')
-        self.assertTrue(result['exists'])
+        self.assertTrue(result['success'])
         self.assertEqual(result['user_name'], 'User')
         self.assertEqual(result['user_email'], 'test@example.com')
 
     def test_check_user_exists_not_found(self):
         from accounts.services import AuthService
         result = AuthService.check_user_exists('nobody@example.com')
-        self.assertTrue(result['exists'])
+        self.assertTrue(result['success'])
         self.assertEqual(result['user_name'], 'User')
         self.assertEqual(result['user_email'], 'nobody@example.com')
 
@@ -75,7 +75,7 @@ class AuthServiceTests(TestCase):
     def test_get_dashboard_url_client(self):
         from accounts.services import AuthService
         url = AuthService.get_dashboard_url(self.user)
-        self.assertIn('client', url)
+        self.assertEqual(url, '/dash/')
 
     def test_get_dashboard_url_super_admin(self):
         from accounts.services import AuthService
@@ -86,7 +86,7 @@ class AuthServiceTests(TestCase):
             role='super_admin',
         )
         url = AuthService.get_dashboard_url(admin)
-        self.assertEqual(url, '/panel/')
+        self.assertEqual(url, '/dash/')
 
 
 class PasswordNormalizationTests(TestCase):
@@ -241,17 +241,17 @@ class LoginViewTests(TestCase):
         session.save()
 
     def test_login_page_loads(self):
-        response = self.client.get('/panel/login/')
+        response = self.client.get('/dash/auth/login/')
         self.assertIn(response.status_code, [200, 302])
 
     def test_logout_redirects(self):
         self.client.login(username='view@example.com', password='testpass123')
-        response = self.client.get('/panel/logout/')
+        response = self.client.get('/dash/auth/logout/')
         self.assertEqual(response.status_code, 302)
 
     def test_check_email_api(self):
         response = self.client.post(
-            '/panel/api/auth/check-email/',
+            '/dash/auth/api/auth/check-email/',
             data=json.dumps({'email': 'view@example.com'}),
             content_type='application/json',
         )
@@ -261,7 +261,7 @@ class LoginViewTests(TestCase):
 
     def test_login_api_success(self):
         response = self.client.post(
-            '/panel/api/auth/login/',
+            '/dash/auth/api/auth/login/',
             data=json.dumps({
                 'email': 'view@example.com',
                 'password': 'testpass123',
@@ -277,7 +277,7 @@ class LoginViewTests(TestCase):
         self.user.save(update_fields=['phone'])
 
         response = self.client.post(
-            '/panel/api/auth/login/',
+            '/dash/auth/api/auth/login/',
             data=json.dumps({
                 'email': '9012345678',
                 'password': 'testpass123',
@@ -288,80 +288,7 @@ class LoginViewTests(TestCase):
         data = response.json()
         self.assertTrue(data['success'])
 
-    def test_login_api_automatically_revokes_oldest_session_for_client(self):
-        # Create an existing session for the user WITH a matching
-        # UserDeviceSession record so the signal can find and revoke it.
-        from django.contrib.sessions.models import Session
-        from accounts.models import UserDeviceSession
-        from django.utils import timezone
 
-        self._create_authenticated_session(surface='desktop')
-        self.assertEqual(Session.objects.count(), 1)
-        old_session_key = Session.objects.first().session_key
-
-        # Register the session with the device-tracking table
-        UserDeviceSession.objects.create(
-            user=self.user,
-            session_key=old_session_key,
-            device_type='web',
-            last_active=timezone.now(),
-        )
-
-        # Login again - should succeed immediately (no stop) and kick the old one
-        response = self.client.post(
-            '/panel/api/auth/login/',
-            data=json.dumps({
-                'email': 'view@example.com',
-                'password': 'testpass123',
-            }),
-            content_type='application/json',
-            REMOTE_ADDR='203.0.113.24',
-        )
-        self.assertEqual(response.status_code, 200)
-        payload = response.json()
-        self.assertTrue(payload['success'], f"Login failed: {payload.get('message')}")
-        
-        # Verify old session was revoked
-        self.assertFalse(Session.objects.filter(session_key=old_session_key).exists())
-        # Current session exists
-        self.assertEqual(Session.objects.count(), 1)
-
-    def test_login_api_force_logout_other_device_allows_handoff(self):
-        from accounts.services import AuthService
-        from accounts.models import UserDeviceSession
-        from django.utils import timezone
-
-        self._create_authenticated_session(surface='desktop')
-        old_session_key = Session.objects.first().session_key
-
-        # Register with device-tracking so the signal can manage it
-        UserDeviceSession.objects.create(
-            user=self.user,
-            session_key=old_session_key,
-            device_type='web',
-            last_active=timezone.now(),
-        )
-
-        response = self.client.post(
-            '/panel/api/auth/login/',
-            data=json.dumps({
-                'email': 'view@example.com',
-                'password': 'testpass123',
-                'force_logout_other': True,
-            }),
-            content_type='application/json',
-            REMOTE_ADDR='203.0.113.24',
-            HTTP_USER_AGENT='Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0',
-            HTTP_ACCEPT_LANGUAGE='en-US',
-        )
-
-        self.assertEqual(response.status_code, 200)
-        payload = response.json()
-        self.assertTrue(payload['success'])
-
-        inspection = AuthService.inspect_active_sessions_for_user(self.user.id)
-        surface_counts = inspection.get('surface_counts') or {}
-        self.assertEqual(int(surface_counts.get('desktop', 0) or 0), 1)
 
     def test_login_api_allows_super_admin_unlimited_desktop_sessions(self):
         super_admin = User.objects.create_user(
@@ -382,7 +309,7 @@ class LoginViewTests(TestCase):
 
         # Login 6th time - should succeed and NOT revoke any existing sessions
         response = self.client.post(
-            '/panel/api/auth/login/',
+            '/dash/auth/api/auth/login/',
             data=json.dumps({
                 'email': 'sa-limit@example.com',
                 'password': 'testpass123',
@@ -405,42 +332,7 @@ class LoginViewTests(TestCase):
                 user_sessions += 1
         self.assertEqual(user_sessions, 6)
 
-    def test_login_api_allows_pro_user_unlimited_desktop_sessions(self):
-        pro_user = User.objects.create_user(
-            username='pro-limit@example.com',
-            email='pro-limit@example.com',
-            password='testpass123',
-            role='pro_user',
-        )
 
-        # Create 12 existing sessions
-        for _ in range(12):
-            session = SessionStore()
-            session['_auth_user_id'] = str(pro_user.pk)
-            session['_auth_user_backend'] = 'django.contrib.auth.backends.ModelBackend'
-            session['_auth_user_hash'] = pro_user.get_session_auth_hash()
-            session['_auth_login_surface'] = 'desktop'
-            session.save()
-
-        response = self.client.post(
-            '/panel/api/auth/login/',
-            data=json.dumps({
-                'email': 'pro-limit@example.com',
-                'password': 'testpass123',
-            }),
-            content_type='application/json',
-            REMOTE_ADDR='203.0.113.26',
-        )
-
-        self.assertEqual(response.status_code, 200)
-        payload = response.json()
-        self.assertTrue(payload['success'])
-        
-        user_sessions = 0
-        for s in Session.objects.all():
-            if str(s.get_decoded().get('_auth_user_id')) == str(pro_user.pk):
-                user_sessions += 1
-        self.assertEqual(user_sessions, 13)
 
     def test_login_api_logs_cross_browser_activity_for_client(self):
         from accounts.services import AuthService
@@ -456,7 +348,7 @@ class LoginViewTests(TestCase):
         )
 
         response = self.client.post(
-            '/panel/api/auth/login/',
+            '/dash/auth/api/auth/login/',
             data=json.dumps({
                 'email': 'view@example.com',
                 'password': 'testpass123',
@@ -476,7 +368,7 @@ class LoginViewTests(TestCase):
 
     def test_login_api_records_ip_address_in_activity_log(self):
         response = self.client.post(
-            '/panel/api/auth/login/',
+            '/dash/auth/api/auth/login/',
             data=json.dumps({
                 'email': 'view@example.com',
                 'password': 'testpass123',
@@ -493,20 +385,8 @@ class LoginViewTests(TestCase):
         self.assertEqual(log_entry.ip_address, '203.0.113.50')
 
 
-class ProUserSessionAPITests(TestCase):
+class AuthServiceIpTests(TestCase):
     def setUp(self):
-        self.pro_user = User.objects.create_user(
-            username='proapi@example.com',
-            email='proapi@example.com',
-            password='testpass123',
-            role='pro_user',
-        )
-        self.target = User.objects.create_user(
-            username='target@example.com',
-            email='target@example.com',
-            password='pass',
-            role='client',
-        )
         # Provide a regular client user used by some login tests in this class
         self.user = User.objects.create_user(
             username='view@example.com',
@@ -524,61 +404,12 @@ class ProUserSessionAPITests(TestCase):
         s.save()
         return s.session_key
 
-    def test_pro_user_can_revoke_selected_user_sessions(self):
-        # create two sessions for target user
-        k1 = self._create_session_for_user(self.target)
-        k2 = self._create_session_for_user(self.target)
-        from django.contrib.sessions.models import Session as DSession
-        # ensure sessions exist
-        self.assertTrue(DSession.objects.filter(session_key=k1).exists())
-        self.assertTrue(DSession.objects.filter(session_key=k2).exists())
 
-        # login as pro_user and call API
-        self.client.force_login(self.pro_user)
-        resp = self.client.post(
-            '/panel/api/pro-user/sessions/revoke/',
-            data=json.dumps({'user_ids': [self.target.id]}),
-            content_type='application/json',
-        )
-        self.assertEqual(resp.status_code, 200)
-        data = resp.json()
-        self.assertTrue(data.get('success'))
-        # sessions for target should be gone
-        self.assertFalse(DSession.objects.filter(session_key=k1).exists())
-        self.assertFalse(DSession.objects.filter(session_key=k2).exists())
-
-    def test_super_admin_can_revoke_all_but_preserve_self(self):
-        super_admin = User.objects.create_user(
-            username='sa2@example.com',
-            email='sa2@example.com',
-            password='pw',
-            role='super_admin',
-        )
-        # create sessions for two different users
-        u1 = User.objects.create_user(username='u1', email='u1@example.com', password='p', role='client')
-        u2 = User.objects.create_user(username='u2', email='u2@example.com', password='p', role='client')
-        k1 = self._create_session_for_user(u1)
-        k2 = self._create_session_for_user(u2)
-
-        # login as super_admin
-        self.client.force_login(super_admin)
-        resp = self.client.post(
-            '/panel/api/pro-user/sessions/revoke/',
-            data=json.dumps({'all': True, 'preserve_self': True}),
-            content_type='application/json',
-        )
-        self.assertEqual(resp.status_code, 200)
-        data = resp.json()
-        self.assertTrue(data.get('success'))
-
-        from django.contrib.sessions.models import Session as DSession
-        self.assertFalse(DSession.objects.filter(session_key=k1).exists())
-        self.assertFalse(DSession.objects.filter(session_key=k2).exists())
 
     @override_settings(RATE_LIMIT_TRUST_X_FORWARDED_FOR=True)
     def test_login_api_records_trusted_xff_ip_in_activity_log(self):
         response = self.client.post(
-            '/panel/api/auth/login/',
+            '/dash/auth/api/auth/login/',
             data=json.dumps({
                 'email': 'view@example.com',
                 'password': 'testpass123',
@@ -598,7 +429,7 @@ class ProUserSessionAPITests(TestCase):
     @override_settings(RATE_LIMIT_TRUST_X_FORWARDED_FOR=False)
     def test_login_api_uses_x_real_ip_when_remote_addr_is_internal_proxy(self):
         response = self.client.post(
-            '/panel/api/auth/login/',
+            '/dash/auth/api/auth/login/',
             data=json.dumps({
                 'email': 'view@example.com',
                 'password': 'testpass123',
@@ -618,7 +449,7 @@ class ProUserSessionAPITests(TestCase):
     @override_settings(RATE_LIMIT_TRUST_X_FORWARDED_FOR=False)
     def test_login_api_prefers_public_remote_addr_when_not_trusting_proxy_headers(self):
         response = self.client.post(
-            '/panel/api/auth/login/',
+            '/dash/auth/api/auth/login/',
             data=json.dumps({
                 'email': 'view@example.com',
                 'password': 'testpass123',
@@ -638,7 +469,7 @@ class ProUserSessionAPITests(TestCase):
 
     def test_login_api_wrong_password(self):
         response = self.client.post(
-            '/panel/api/auth/login/',
+            '/dash/auth/api/auth/login/',
             data=json.dumps({
                 'email': 'view@example.com',
                 'password': 'wrong',
@@ -652,7 +483,7 @@ class ProUserSessionAPITests(TestCase):
     def test_forgot_password_api_never_exposes_dev_otp(self):
         with mock.patch.dict('os.environ', {'DEV_EXPOSE_OTP': 'true'}):
             response = self.client.post(
-                '/panel/api/auth/forgot-password/',
+                '/dash/auth/api/auth/forgot-password/',
                 data=json.dumps({'email': 'view@example.com'}),
                 content_type='application/json',
             )
@@ -673,7 +504,7 @@ class RateLimitTests(TestCase):
     def test_rate_limit_allows_under_limit(self):
         for _ in range(3):
             response = self.client.post(
-                '/panel/api/auth/login/',
+                '/dash/auth/api/auth/login/',
                 data=json.dumps({'email': 'test@x.com', 'password': 'x'}),
                 content_type='application/json',
             )
@@ -682,7 +513,7 @@ class RateLimitTests(TestCase):
     def test_rate_limit_blocks_over_limit(self):
         for i in range(8):
             response = self.client.post(
-                '/panel/api/auth/login/',
+                '/dash/auth/api/auth/login/',
                 data=json.dumps({'email': 'test@x.com', 'password': 'x'}),
                 content_type='application/json',
             )
@@ -693,7 +524,7 @@ class RateLimitTests(TestCase):
         # Exhaust check-email endpoint bucket first.
         for _ in range(12):
             self.client.post(
-                '/panel/api/auth/check-email/',
+                '/dash/auth/api/auth/check-email/',
                 data=json.dumps({'email': 'test@x.com'}),
                 content_type='application/json',
                 REMOTE_ADDR='8.8.8.8',
@@ -701,7 +532,7 @@ class RateLimitTests(TestCase):
 
         # Login endpoint should still have its own bucket and not be hard-blocked by 429.
         login_response = self.client.post(
-            '/panel/api/auth/login/',
+            '/dash/auth/api/auth/login/',
             data=json.dumps({'email': 'test@x.com', 'password': 'x'}),
             content_type='application/json',
             REMOTE_ADDR='8.8.8.8',
@@ -726,14 +557,14 @@ class RateLimitClientIPTests(TestCase):
     @override_settings(RATE_LIMIT_TRUST_X_FORWARDED_FOR=False)
     def test_get_client_ip_uses_remote_addr_by_default(self):
         from accounts.rate_limit import _get_client_ip
-        request = self.factory.get('/panel/api/auth/login/', REMOTE_ADDR='10.10.10.10', HTTP_X_FORWARDED_FOR='8.8.8.8')
+        request = self.factory.get('/dash/auth/api/auth/login/', REMOTE_ADDR='10.10.10.10', HTTP_X_FORWARDED_FOR='8.8.8.8')
         self.assertEqual(_get_client_ip(request), '10.10.10.10')
 
     @override_settings(RATE_LIMIT_TRUST_X_FORWARDED_FOR=True)
     def test_get_client_ip_uses_trusted_xff_when_enabled(self):
         from accounts.rate_limit import _get_client_ip
         request = self.factory.get(
-            '/panel/api/auth/login/',
+            '/dash/auth/api/auth/login/',
             REMOTE_ADDR='10.10.10.10',
             HTTP_X_FORWARDED_FOR='198.51.100.1, 203.0.113.10'
         )
@@ -743,7 +574,7 @@ class RateLimitClientIPTests(TestCase):
     def test_get_client_ip_uses_x_real_ip_when_remote_addr_invalid(self):
         from accounts.rate_limit import _get_client_ip
         request = self.factory.get(
-            '/panel/api/auth/login/',
+            '/dash/auth/api/auth/login/',
             REMOTE_ADDR='invalid-ip',
             HTTP_X_REAL_IP='198.51.100.77',
         )
@@ -751,16 +582,7 @@ class RateLimitClientIPTests(TestCase):
 
 
 class AuthServiceRoleEdgeTests(TestCase):
-    def test_authenticate_allows_pro_user_when_super_admin_selected(self):
-        from accounts.services import AuthService
-        User.objects.create_user(
-            username='pro@example.com',
-            email='pro@example.com',
-            password='propass123',
-            role='pro_user',
-        )
-        result = AuthService.authenticate_user('pro@example.com', 'propass123', role='super_admin')
-        self.assertTrue(result['success'])
+
 
     def test_authenticate_rejects_role_mismatch(self):
         from accounts.services import AuthService
@@ -991,18 +813,16 @@ class UserProfileServiceTests(TestCase):
 
 class ProfileApiIntegrationTests(TestCase):
     def setUp(self):
-        from client.models import Client
         self.user = User.objects.create_user(
             username='api-profile@example.com',
             email='api-profile@example.com',
             password='testpass123',
             role='client',
         )
-        Client.objects.create(user=self.user, name='Profile Test Client')
         self.client.login(username='api-profile@example.com', password='testpass123')
 
     def test_get_profile_api(self):
-        response = self.client.get('/panel/api/profile/')
+        response = self.client.get('/dash/api/profile/')
         self.assertEqual(response.status_code, 200)
         payload = response.json()
         self.assertTrue(payload['success'])
@@ -1010,7 +830,7 @@ class ProfileApiIntegrationTests(TestCase):
 
     def test_update_profile_api(self):
         response = self.client.post(
-            '/panel/api/profile/update/',
+            '/dash/api/profile/update/',
             data=json.dumps({'first_name': 'Api', 'last_name': 'User'}),
             content_type='application/json',
         )
@@ -1021,7 +841,7 @@ class ProfileApiIntegrationTests(TestCase):
 
     def test_change_password_api(self):
         response = self.client.post(
-            '/panel/api/profile/change-password/',
+            '/dash/api/profile/change-password/',
             data=json.dumps({'current_password': 'testpass123', 'new_password': 'newpass123'}),
             content_type='application/json',
         )
@@ -1030,255 +850,9 @@ class ProfileApiIntegrationTests(TestCase):
         self.assertTrue(payload['success'])
 
     def test_upload_profile_image_api_returns_feature_disabled(self):
-        response = self.client.post('/panel/api/profile/upload-image/')
+        response = self.client.post('/dash/api/profile/upload-image/')
         self.assertEqual(response.status_code, 200)
         payload = response.json()
         self.assertFalse(payload['success'])
         self.assertIn('no longer available', payload['message'].lower())
-
-
-class ProUserAuditApiTests(TestCase):
-    def setUp(self):
-        self.pro_user = User.objects.create_user(
-            username='pro-user@example.com',
-            email='pro-user@example.com',
-            password='testpass123',
-            role='pro_user',
-        )
-        self.target_user = User.objects.create_user(
-            username='target-user@example.com',
-            email='target-user@example.com',
-            password='testpass123',
-            role='client',
-        )
-        self.normal_user = User.objects.create_user(
-            username='normal-user@example.com',
-            email='normal-user@example.com',
-            password='testpass123',
-            role='client',
-        )
-        self.other_admin = User.objects.create_user(
-            username='admin-staff@example.com',
-            email='admin-staff@example.com',
-            password='testpass123',
-            role='admin_staff',
-        )
-
-    def test_user_audit_user_list_requires_pro_user(self):
-        self.client.login(username='normal-user@example.com', password='testpass123')
-        response = self.client.get('/panel/api/auth/user-audit/users/')
-        self.assertEqual(response.status_code, 403)
-
-    def test_user_audit_history_requires_pro_user(self):
-        self.client.login(username='normal-user@example.com', password='testpass123')
-        response = self.client.get(f'/panel/api/auth/user-audit/history/?user_id={self.target_user.id}')
-        self.assertEqual(response.status_code, 403)
-
-    def test_pro_user_can_list_audit_targets(self):
-        self.client.login(username='pro-user@example.com', password='testpass123')
-        response = self.client.get('/panel/api/auth/user-audit/users/')
-        self.assertEqual(response.status_code, 200)
-        payload = response.json()
-        self.assertTrue(payload['success'])
-        self.assertTrue(any(u['id'] == self.target_user.id for u in payload['users']))
-
-    def test_pro_user_can_get_deep_history_for_user(self):
-        from core.services.activity_service import ActivityService
-
-        self.client.login(username='pro-user@example.com', password='testpass123')
-        ActivityService.log(
-            'login',
-            'Target User logged in via Windows Chrome browser',
-            user=self.target_user,
-        )
-        ActivityService.log(
-            'card_bulk_download',
-            'Downloaded 15 cards for Demo Client',
-            user=self.target_user,
-        )
-        ActivityService.log(
-            'staff_update',
-            'Staff profile changed for target user',
-            user=self.other_admin,
-            target_model='User',
-            target_id=self.target_user.id,
-            target_name=self.target_user.get_full_name() or self.target_user.username,
-        )
-
-        response = self.client.get(f'/panel/api/auth/user-audit/history/?user_id={self.target_user.id}&limit=20')
-        self.assertEqual(response.status_code, 200)
-        payload = response.json()
-        self.assertTrue(payload['success'])
-        self.assertEqual(payload['user']['id'], self.target_user.id)
-        self.assertGreaterEqual(payload['summary']['total_events'], 3)
-        self.assertTrue(any(item['action'] == 'login' for item in payload['logs']))
-        self.assertTrue(any(item['action'] == 'card_bulk_download' for item in payload['logs']))
-
-    def test_user_audit_history_requires_user_id(self):
-        self.client.login(username='pro-user@example.com', password='testpass123')
-        response = self.client.get('/panel/api/auth/user-audit/history/')
-        self.assertEqual(response.status_code, 400)
-
-    def test_user_audit_actions_endpoint(self):
-        self.client.login(username='pro-user@example.com', password='testpass123')
-        response = self.client.get('/panel/api/auth/user-audit/actions/')
-        self.assertEqual(response.status_code, 200)
-        payload = response.json()
-        self.assertTrue(payload['success'])
-        self.assertTrue(any(entry['value'] == 'login' for entry in payload['actions']))
-
-
-class ImpersonationApiTests(TestCase):
-    def setUp(self):
-        self.pro_user = User.objects.create_user(
-            username='pro-user-imp@example.com',
-            email='pro-user-imp@example.com',
-            password='testpass123',
-            role='pro_user',
-        )
-        self.target_user = User.objects.create_user(
-            username='target-user-imp@example.com',
-            email='target-user-imp@example.com',
-            password='testpass123',
-            role='client',
-        )
-        self.normal_user = User.objects.create_user(
-            username='normal-user-imp@example.com',
-            email='normal-user-imp@example.com',
-            password='testpass123',
-            role='client',
-        )
-
-    def test_impersonation_list_requires_pro_user(self):
-        self.client.login(username='normal-user-imp@example.com', password='testpass123')
-        response = self.client.get('/panel/api/auth/impersonate/users/')
-        self.assertEqual(response.status_code, 403)
-
-    def test_impersonation_list_excludes_inactive_users(self):
-        self.target_user.is_active = False
-        self.target_user.save(update_fields=['is_active'])
-
-        self.client.login(username='pro-user-imp@example.com', password='testpass123')
-        response = self.client.get('/panel/api/auth/impersonate/users/')
-        self.assertEqual(response.status_code, 200)
-
-        payload = response.json()
-        self.assertTrue(payload['success'])
-        returned_ids = {entry['id'] for entry in payload['users']}
-        self.assertNotIn(self.target_user.id, returned_ids)
-        self.assertIn(self.normal_user.id, returned_ids)
-
-    def test_impersonation_list_includes_assistant_and_super_admin_when_many_admin_staff_exist(self):
-        for idx in range(120):
-            User.objects.create_user(
-                username=f'bulk-admin-{idx}@example.com',
-                email=f'bulk-admin-{idx}@example.com',
-                password='testpass123',
-                role='admin_staff',
-            )
-
-        assistant_user = User.objects.create_user(
-            username='assistant-target-imp@example.com',
-            email='assistant-target-imp@example.com',
-            password='testpass123',
-            role='client_staff',
-        )
-        super_admin_user = User.objects.create_user(
-            username='superadmin-target-imp@example.com',
-            email='superadmin-target-imp@example.com',
-            password='testpass123',
-            role='super_admin',
-        )
-
-        self.client.login(username='pro-user-imp@example.com', password='testpass123')
-        response = self.client.get('/panel/api/auth/impersonate/users/')
-        self.assertEqual(response.status_code, 200)
-
-        payload = response.json()
-        self.assertTrue(payload['success'])
-        returned_ids = {entry['id'] for entry in payload['users']}
-        self.assertIn(assistant_user.id, returned_ids)
-        self.assertIn(super_admin_user.id, returned_ids)
-
-    def test_impersonation_start_requires_pro_user(self):
-        self.client.login(username='normal-user-imp@example.com', password='testpass123')
-        response = self.client.post(
-            '/panel/api/auth/impersonate/start/',
-            data=json.dumps({'user_id': self.target_user.id}),
-            content_type='application/json',
-        )
-        self.assertEqual(response.status_code, 403)
-
-    def test_pro_user_can_start_and_stop_impersonation(self):
-        self.client.login(username='pro-user-imp@example.com', password='testpass123')
-
-        start = self.client.post(
-            '/panel/api/auth/impersonate/start/',
-            data=json.dumps({'user_id': self.target_user.id}),
-            content_type='application/json',
-        )
-        self.assertEqual(start.status_code, 200)
-        start_payload = start.json()
-        self.assertTrue(start_payload['success'])
-        self.assertIn('_pro_original_user_id', self.client.session)
-
-        stop = self.client.post('/panel/api/auth/impersonate/stop/', data='{}', content_type='application/json')
-        self.assertEqual(stop.status_code, 200)
-        stop_payload = stop.json()
-        self.assertTrue(stop_payload['success'])
-        self.assertNotIn('_pro_original_user_id', self.client.session)
-
-    def test_impersonation_start_requires_user_id(self):
-        self.client.login(username='pro-user-imp@example.com', password='testpass123')
-        response = self.client.post(
-            '/panel/api/auth/impersonate/start/',
-            data=json.dumps({}),
-            content_type='application/json',
-        )
-        self.assertEqual(response.status_code, 400)
-
-    def test_impersonation_stop_without_active_session(self):
-        self.client.login(username='pro-user-imp@example.com', password='testpass123')
-        response = self.client.post('/panel/api/auth/impersonate/stop/', data='{}', content_type='application/json')
-        self.assertEqual(response.status_code, 400)
-
-    def test_impersonation_rejects_inactive_target(self):
-        self.target_user.is_active = False
-        self.target_user.save(update_fields=['is_active'])
-        self.client.login(username='pro-user-imp@example.com', password='testpass123')
-
-        response = self.client.post(
-            '/panel/api/auth/impersonate/start/',
-            data=json.dumps({'user_id': self.target_user.id}),
-            content_type='application/json',
-        )
-        self.assertEqual(response.status_code, 403)
-        payload = response.json()
-        self.assertFalse(payload['success'])
-        self.assertIn('inactive', payload['message'].lower())
-
-    def test_logout_while_impersonating_keeps_pro_session_for_mobile_next(self):
-        self.client.login(username='pro-user-imp@example.com', password='testpass123')
-        session = self.client.session
-        session['mobile_auth_ok'] = True
-        session['_auth_login_surface'] = 'mobile'
-        session['selected_role'] = 'pro_user'
-        session.save()
-
-        start = self.client.post(
-            '/panel/api/auth/impersonate/start/',
-            data=json.dumps({'user_id': self.target_user.id}),
-            content_type='application/json',
-        )
-        self.assertEqual(start.status_code, 200)
-
-        response = self.client.post('/dash/auth/logout/', {'next': '/app/'})
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], '/app/')
-
-        session = self.client.session
-        self.assertTrue(session.get('mobile_auth_ok'))
-        self.assertEqual(session.get('selected_role'), 'pro_user')
-        self.assertNotIn('_pro_original_user_id', session)
-
-        self.assertEqual(int(session.get('_auth_user_id')), self.pro_user.id)
+

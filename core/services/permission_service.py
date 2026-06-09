@@ -33,25 +33,23 @@ class PermissionService:
         'perm_set_temp_password',
     ]
     
-    PRO_ONLY_PERMISSIONS = [
-        'perm_pro_extra_features',
-    ]
-
     ALL_PERMISSION_KEYS: List[str] = (
         WEBSITE_PERMISSIONS
         + MANAGE_PANEL_PERMISSIONS
         + ACCOUNT_SECURITY_PERMISSIONS
-        + PRO_ONLY_PERMISSIONS
     )
 
     @staticmethod
     def is_pro(user) -> bool:
-        return user.is_authenticated and user.role == 'pro'
+        return False
 
     @staticmethod
     def is_admin(user) -> bool:
-        # Admin has all rights
-        return user.is_authenticated and (user.is_superuser or user.role == 'admin')
+        return user.is_authenticated and (user.is_superuser or user.role in ('admin', 'super_admin'))
+
+    @staticmethod
+    def is_super_admin(user) -> bool:
+        return user.is_authenticated and (user.is_superuser or user.role in ('admin', 'super_admin'))
 
     @staticmethod
     def is_operator(user) -> bool:
@@ -61,8 +59,7 @@ class PermissionService:
     def is_any_admin(user) -> bool:
         if not user.is_authenticated:
             return False
-        # All 3 roles are considered "admin" in terms of panel access
-        return user.role in ('admin', 'pro', 'operator')
+        return user.is_superuser or user.role in ('admin', 'super_admin', 'operator')
 
     @classmethod
     def has(cls, user, perm_key: str) -> bool:
@@ -71,10 +68,6 @@ class PermissionService:
         
         # Admin has absolute access
         if cls.is_admin(user):
-            return True
-            
-        # Pro has everything except maybe some system-level things, but per user request "same as admin"
-        if cls.is_pro(user):
             return True
             
         # Operator has only permitted features

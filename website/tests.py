@@ -304,30 +304,6 @@ class WebsitePublicHardeningTests(TestCase):
 	def setUp(self):
 		cache.clear()
 
-	def test_panel_entry_falls_back_to_safe_login_path_for_invalid_next(self):
-		response = self.client.get(reverse('website:panel_entry'), {'next': '/panel/../../etc/passwd'})
-
-		self.assertEqual(response.status_code, 302)
-		location = response['Location']
-		parsed = urlsplit(location)
-		query = parse_qs(parsed.query)
-
-		self.assertIn(parsed.path, ['/panel/auth/login/', '/auth/login/'])
-		self.assertIn('panel_entry_token', query)
-
-	def test_panel_entry_preserves_valid_panel_path_and_query(self):
-		response = self.client.get(reverse('website:panel_entry'), {'next': '/panel/app/login/?install=1&src=website'})
-
-		self.assertEqual(response.status_code, 302)
-		location = response['Location']
-		parsed = urlsplit(location)
-		query = parse_qs(parsed.query)
-
-		self.assertIn(parsed.path, ['/panel/app/login/', '/app/login/'])
-		self.assertEqual(query.get('install'), ['1'])
-		self.assertEqual(query.get('src'), ['website'])
-		self.assertIn('panel_entry_token', query)
-
 	def test_submit_contact_sanitizes_subject_before_save(self):
 		response = self.client.post(
 			reverse('website:submit_contact'),
@@ -354,32 +330,10 @@ class WebsitePwaInstallabilityTests(TestCase):
 		self.assertEqual(response.status_code, 200)
 		self.assertEqual(response['Content-Type'], 'application/manifest+json')
 		payload = response.json()
-		self.assertEqual(payload.get('start_url'), '/panel-entry/?next=/auth/login/&src=pwa-launch')
+		self.assertEqual(payload.get('start_url'), '/dash/auth/login/?src=pwa-launch')
 		self.assertEqual(payload.get('scope'), '/')
 		self.assertEqual(payload.get('display'), 'standalone')
 		self.assertGreaterEqual(len(payload.get('icons', [])), 1)
-
-	@override_settings(PANEL_DOMAIN='panel.example.test', ALLOWED_HOSTS=['testserver', 'panel.example.test'])
-	def test_manifest_returns_panel_payload_for_panel_host(self):
-		factory = RequestFactory()
-		request = factory.get('/manifest.json', HTTP_HOST='panel.example.test')
-
-		response = pwa_manifest(request)
-
-		self.assertEqual(response.status_code, 200)
-		payload = json.loads(response.content.decode('utf-8'))
-		self.assertEqual(payload.get('name'), 'Adarsh ID Cards Panel')
-		self.assertEqual(payload.get('start_url'), '/')
-		self.assertEqual(payload.get('scope'), '/')
-
-	@override_settings(PANEL_DOMAIN='panel.example.test', ALLOWED_HOSTS=['testserver', 'panel.example.test'])
-	def test_manifest_endpoint_is_exempt_on_panel_host(self):
-		response = self.client.get('/manifest.json', HTTP_HOST='panel.example.test')
-
-		self.assertEqual(response.status_code, 200)
-		self.assertEqual(response['Content-Type'], 'application/manifest+json')
-		payload = response.json()
-		self.assertEqual(payload.get('name'), 'Adarsh ID Cards Panel')
 
 	def test_service_worker_endpoint_returns_required_headers(self):
 		response = self.client.get(reverse('website:pwa_service_worker'))

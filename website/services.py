@@ -186,37 +186,7 @@ def _detect_orientation(image_file):
 
 def _resolve_user_avatar_source_by_email(reviewer_email):
     """Return a source image field for a known user email, if available."""
-    normalized_email = str(reviewer_email or '').strip().lower()
-    if not normalized_email:
-        return None
-
-    user_model = get_user_model()
-    user = (
-        user_model.objects
-        .filter(email__iexact=normalized_email)
-        .select_related('client_profile', 'staff_profile__client')
-        .first()
-    )
-    if not user:
-        return None
-
-    profile_image = getattr(user, 'profile_image', None)
-    if profile_image and getattr(profile_image, 'name', ''):
-        return profile_image
-
-    client_profile = getattr(user, 'client_profile', None)
-    if client_profile:
-        client_logo = getattr(client_profile, 'website_logo', None)
-        if client_logo and getattr(client_logo, 'name', ''):
-            return client_logo
-
-    staff_profile = getattr(user, 'staff_profile', None)
-    staff_client = getattr(staff_profile, 'client', None) if staff_profile else None
-    if staff_client:
-        staff_client_logo = getattr(staff_client, 'website_logo', None)
-        if staff_client_logo and getattr(staff_client_logo, 'name', ''):
-            return staff_client_logo
-
+    # Decoupled: User model no longer carries client/staff profile linkages.
     return None
 
 

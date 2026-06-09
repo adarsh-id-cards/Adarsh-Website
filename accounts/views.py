@@ -61,16 +61,23 @@ class LoginPageView(View):
             return redirect(AuthService.get_dashboard_url(request.user))
         return render(request, self.template_name)
 
+def _mask_login_identifier(identifier: str) -> str:
+    if not identifier:
+        return ""
+    if "@" in identifier:
+        parts = identifier.split("@", 1)
+        local, domain = parts[0], parts[1]
+        masked_local = (local[0] + "***") if len(local) > 1 else (local + "***")
+        return f"{masked_local}@{domain}"
+    return (identifier[0] + "***") if len(identifier) > 1 else (identifier + "***")
+
 @method_decorator(csrf_exempt, name='dispatch')
 class LogoutView(View):
+    def get(self, request):
+        return self.post(request)
+
     def post(self, request):
-        from .services_impersonate import ImpersonateService
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.content_type == 'application/json'
-        if request.user.is_authenticated and ImpersonateService.is_impersonating(request):
-            res = ImpersonateService.stop(request)
-            if res['success']:
-                if is_ajax: return JsonResponse({'success': True, 'redirect': res['redirect_url']})
-                return redirect(res['redirect_url'])
         
         if request.user.is_authenticated:
             ActivityService.log_logout(request, request.user)
@@ -81,7 +88,7 @@ class LogoutView(View):
 
 class StaffDashboardView(LoginRequiredMixin, View):
     def get(self, request):
-        return redirect('/panel/')
+        return redirect('/dash/')
 
 @method_decorator(csrf_exempt, name='dispatch')
 @method_decorator(rate_limit(max_requests=10, window_seconds=60), name='dispatch')
@@ -118,6 +125,7 @@ class ForgotPasswordAPIView(View):
     def post(self, request):
         data = json.loads(request.body)
         res = OTPService.send_otp(data.get('email', '').strip())
+        res.pop('dev_otp', None)
         return JsonResponse(res)
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -134,34 +142,4 @@ class ResetPasswordAPIView(View):
         res = OTPService.reset_password(data.get('email', '').strip(), data.get('reset_token', '').strip(), data.get('new_password', ''))
         return JsonResponse(res)
 
-class ImpersonateStartAPIView(LoginRequiredMixin, View):
-    def post(self, request):
-        from .services_impersonate import ImpersonateService
-        data = json.loads(request.body)
-        res = ImpersonateService.start(request, int(data.get('user_id', 0)))
-        return JsonResponse(res)
 
-class ImpersonateStopAPIView(LoginRequiredMixin, View):
-    def post(self, request):
-        from .services_impersonate import ImpersonateService
-        res = ImpersonateService.stop(request)
-        return JsonResponse(res)
-
-class ImpersonateListAPIView(LoginRequiredMixin, View):
-    def get(self, request):
-        from .services_impersonate import ImpersonateService
-        return JsonResponse({'success': True, 'users': ImpersonateService.get_impersonation_targets(request)})
-
-class ProUserAuditUsersAPIView(LoginRequiredMixin, View):
-    def get(self, request):
-        if request.user.role != 'pro': return JsonResponse({'success': False}, status=403)
-        users = User.objects.all().order_by('username')
-        return JsonResponse({'success': True, 'users': [{'id': u.id, 'username': u.username, 'role': u.role} for u in users]})
-
-class ProUserAuditHistoryAPIView(LoginRequiredMixin, View):
-    def get(self, request):
-        return JsonResponse({'success': True, 'history': []})
-
-class ProUserAuditActionsAPIView(LoginRequiredMixin, View):
-    def get(self, request):
-        return JsonResponse({'success': True, 'actions': []})

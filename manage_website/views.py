@@ -67,7 +67,7 @@ def _is_ajax_or_api_request(request) -> bool:
 def _permission_denied_for_website(request, message='Website access denied'):
     if _is_ajax_or_api_request(request):
         return JsonResponse({'success': False, 'message': message}, status=403)
-    return redirect('/panel/')
+    return redirect('/dash/')
 
 
 def _auth_required_for_website(request):
@@ -231,7 +231,7 @@ def website_dashboard(request):
         return redirect('manage_website:clients')
     if PermissionService.has(user, 'perm_website_publish'):
         return redirect('manage_website:business')
-    return redirect('/panel/')
+    return redirect('/dash/')
 
 
 @website_view_required
@@ -243,7 +243,6 @@ def business_details_page(request):
     context['website_status'] = WebsiteStatus.get_status()
     context['website_not_found_mode'] = SystemSettings.get_value('website_not_found_mode', 'false') == 'true'
     context['can_publish_website'] = PermissionService.has(request.user, 'perm_website_publish')
-    context['can_send_pro_access_link'] = PermissionService.is_pro(request.user)
     return render(request, 'website/admin/business-details.html', context)
 
 
@@ -396,7 +395,6 @@ def api_website_status_summary(request):
         'success': True,
         'website_status': WebsiteStatus.get_status(),
         'website_not_found_mode': not_found_mode,
-        'can_send_pro_access_link': PermissionService.is_pro(request.user),
     })
 
 @require_POST
@@ -445,47 +443,7 @@ def api_set_website_not_found_mode(request):
         return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.'}, status=500)
 
 
-@require_POST
-@website_publish_required
-def api_send_pro_panel_access_link(request):
-    """
-    Pro-only endpoint: send tokenized panel access link email to an active account.
-    Intended for emergency login support when website Not Found mode is active.
-    """
-    try:
-        if not PermissionService.is_pro(request.user):
-            return JsonResponse(
-                {'success': False, 'message': 'Only Pro User can send emergency access links.'},
-                status=403,
-            )
 
-        not_found_mode = SystemSettings.get_value('website_not_found_mode', 'false') == 'true'
-        if not not_found_mode:
-            return JsonResponse(
-                {'success': False, 'message': 'Enable Domain Not Found Mode first.'},
-                status=400,
-            )
-
-        email = (request.POST.get('email') or '').strip()
-        if not email:
-            return JsonResponse({'success': False, 'message': 'Email is required.'}, status=400)
-
-        success, message = send_emergency_panel_access_email(
-            target_email=email,
-            request=request,
-            issued_by=request.user,
-        )
-        if not success:
-            return JsonResponse({'success': False, 'message': message}, status=400)
-
-        ActivityService.log_website_update(
-            request,
-            f'pro emergency panel access link sent to {email}',
-        )
-        return JsonResponse({'success': True, 'message': message})
-    except Exception as e:
-        logging.getLogger(__name__).exception("Send pro panel access link error: %s", e)
-        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.'}, status=500)
 
 
 # =============================================================================

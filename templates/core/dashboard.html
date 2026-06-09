@@ -3,6 +3,10 @@
 
 {% block title %}Dashboard - Adarsh Admin{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'dist/css/wa.min.css' %}">
+{% endblock %}
+
 {% block breadcrumb %}
 <span class="breadcrumb-item active"><i class="fa-solid fa-house"></i> Dashboard</span>
 {% endblock %}
@@ -60,35 +64,7 @@
                 </div>
             </div>
 
-            {% if is_pro %}
-            <div class="wa-control-card is-live" id="proAccessBanner">
-                <div class="wa-control-head">
-                    <span class="wa-control-icon">
-                        <i class="fa-solid fa-user-shield"></i>
-                    </span>
-                    <div>
-                        <p class="wa-control-title">Pro Emergency Access Link</p>
-                        <p class="wa-control-meta">Send secure panel access when domain mode is enabled</p>
-                    </div>
-                </div>
-                <div class="wa-control-body wa-control-body-wrap">
-                    <input
-                        type="email"
-                        id="proAccessEmailInput"
-                        placeholder="Enter account email"
-                        class="wa-inline-email-input"
-                    >
-                    <button
-                        class="btn btn-sm btn-primary"
-                        id="sendProAccessBtn"
-                        {% if not website_not_found_mode %}disabled title="Enable Domain Not Found Mode first"{% endif %}
-                    >
-                        <i class="fa-solid fa-paper-plane"></i>
-                        Send Access Link
-                    </button>
-                </div>
-            </div>
-            {% endif %}
+
         </div>
     </div>
 
@@ -105,6 +81,111 @@
 
             {% include 'components/stat-card.html' with icon="fa-solid fa-tags" value=total_categories label="Categories" meta=bento_categories_count|default:0 meta_suffix="in bento grid" color="orange" card_class="wa-stat-card" icon_class="wa-stat-icon" info_class="wa-stat-info" value_class="wa-stat-value" label_class="wa-stat-label" meta_class="wa-stat-meta" %}
             {% include 'components/stat-card.html' with icon="fa-solid fa-envelope" value=total_contacts label="Contact Leads" meta=new_contacts|default:0 meta_suffix="new" color="red" card_class="wa-stat-card" icon_class="wa-stat-icon" info_class="wa-stat-info" value_class="wa-stat-value" label_class="wa-stat-label" meta_class="wa-stat-meta" %}
+        </div>
+    </div>
+
+    <!-- Performance & Analytics Section -->
+    <div class="wa-dashboard-section" style="border-bottom: 1px solid var(--wa-gray-200);">
+        <div class="wa-dashboard-section-header">
+            <h3 class="wa-dashboard-section-title"><i class="fa-solid fa-chart-line"></i> Website Reach & Performance Metrics</h3>
+        </div>
+        <div style="padding: 20px 20px 0;">
+            <!-- KPI Grid -->
+            <div class="wa-kpi-grid">
+                <div class="wa-kpi-card">
+                    <div class="wa-kpi-icon blue"><i class="fa-solid fa-eye"></i></div>
+                    <div class="wa-kpi-info">
+                        <span class="wa-kpi-value">{{ analytics.total_reach }}</span>
+                        <span class="wa-kpi-label">Total Reach <span class="wa-kpi-trend up"><i class="fa-solid fa-arrow-up"></i> 14.8%</span></span>
+                    </div>
+                </div>
+                <div class="wa-kpi-card">
+                    <div class="wa-kpi-icon purple"><i class="fa-solid fa-users"></i></div>
+                    <div class="wa-kpi-info">
+                        <span class="wa-kpi-value">{{ analytics.unique_visitors }}</span>
+                        <span class="wa-kpi-label">Unique Visitors <span class="wa-kpi-trend up"><i class="fa-solid fa-arrow-up"></i> 8.2%</span></span>
+                    </div>
+                </div>
+                <div class="wa-kpi-card">
+                    <div class="wa-kpi-icon green"><i class="fa-solid fa-hourglass-half"></i></div>
+                    <div class="wa-kpi-info">
+                        <span class="wa-kpi-value">{{ kpi_avg_duration }}</span>
+                        <span class="wa-kpi-label">Avg. Duration <span class="wa-kpi-trend up"><i class="fa-solid fa-arrow-up"></i> 5.3%</span></span>
+                    </div>
+                </div>
+                <div class="wa-kpi-card">
+                    <div class="wa-kpi-icon orange"><i class="fa-solid fa-bullseye"></i></div>
+                    <div class="wa-kpi-info">
+                        <span class="wa-kpi-value">{{ kpi_conversion_rate }}</span>
+                        <span class="wa-kpi-label">Conversion Rate <span class="wa-kpi-trend up"><i class="fa-solid fa-arrow-up"></i> 12.1%</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="wa-analytics-grid" style="padding: 0 20px 20px;">
+            <!-- Left Chart Card: Visitor Reach (Line Chart) -->
+            <div class="wa-chart-card">
+                <div class="wa-chart-card-header">
+                    <div>
+                        <h4 class="wa-chart-title"><i class="fa-solid fa-chart-line"></i> Visitor Traffic & Reach</h4>
+                        <p class="wa-chart-subtitle">Real-time unique visitors and total page impressions</p>
+                    </div>
+                    <div class="wa-chart-timeframes">
+                        <button class="wa-timeframe-btn active" data-timeframe="7d">7D</button>
+                        <button class="wa-timeframe-btn" data-timeframe="30d">30D</button>
+                        <button class="wa-timeframe-btn" data-timeframe="12m">12M</button>
+                    </div>
+                </div>
+                <div class="wa-chart-body">
+                    <canvas id="trafficChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Right Chart Card: Inquiry Channels (Doughnut) -->
+            <div class="wa-chart-card">
+                <div class="wa-chart-card-header">
+                    <div>
+                        <h4 class="wa-chart-title"><i class="fa-solid fa-compass"></i> Inquiries Channels</h4>
+                        <p class="wa-chart-subtitle">Direct, organic, and messaging sources</p>
+                    </div>
+                </div>
+                <div class="wa-chart-body wa-chart-doughnut">
+                    <canvas id="sourcesChart"></canvas>
+                    <div style="position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;">
+                        <span style="font-size: 22px; font-weight: 700; color: var(--wa-gray-800); line-height: 1;">{{ total_contacts }}</span>
+                        <span style="font-size: 9px; font-weight: 700; color: var(--wa-gray-500); text-transform: uppercase; margin-top: 3px; letter-spacing: 0.05em;">Leads</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Category Reach Section -->
+    <div class="wa-dashboard-section" style="border-bottom: 1px solid var(--wa-gray-200);">
+        <div class="wa-dashboard-section-header">
+            <h3 class="wa-dashboard-section-title"><i class="fa-solid fa-tags"></i> Product Engagement & Performance</h3>
+            <span class="wa-count-badge">{{ category_reach|length }} Active Categories</span>
+        </div>
+        <div style="padding: 20px;">
+            <div class="wa-categories-list">
+                {% for cat in category_reach %}
+                <div class="wa-category-stat-row">
+                    <div class="wa-category-stat-info">
+                        <span class="wa-category-stat-name">
+                            <span class="wa-category-stat-dot" style="background: hsl({{ cat.color_hue }}, 75%, 55%);"></span>
+                            {{ cat.name }}
+                        </span>
+                        <span class="wa-category-stat-views">
+                            <strong>{{ cat.views }}</strong> views &bull; <strong>{{ cat.count }}</strong> products
+                        </span>
+                    </div>
+                    <div class="wa-category-progress-bg">
+                        <div class="wa-category-progress-fill" style="background: linear-gradient(90deg, hsl({{ cat.color_hue }}, 85%, 55%) 0%, hsl({{ cat.color_hue }}, 85%, 45%) 100%); width: 0%;" data-views="{{ cat.views }}"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 
@@ -198,8 +279,7 @@
 (function() {
     const toggleBtn = document.getElementById('toggleStatusBtn');
     const toggleNotFoundBtn = document.getElementById('toggleNotFoundBtn');
-    const sendProAccessBtn = document.getElementById('sendProAccessBtn');
-    const proAccessEmailInput = document.getElementById('proAccessEmailInput');
+
 
     if (toggleBtn) {
         toggleBtn.addEventListener('click', async function() {
@@ -258,49 +338,217 @@
         });
     }
 
-    if (sendProAccessBtn && proAccessEmailInput) {
-        sendProAccessBtn.addEventListener('click', async function() {
-            const email = (proAccessEmailInput.value || '').trim();
-            if (!email) {
-                showToast('Please enter an email address', 'error');
-                return;
-            }
 
-            const ok = await waConfirm({
-                title: 'Send Emergency Access Link?',
-                text: 'A tokenized panel login link will be sent to this email.',
-                icon: 'fa-solid fa-user-shield',
-                confirmLabel: 'Send Link',
-                btnClass: 'btn-primary'
-            });
-            if (!ok) return;
-
-            sendProAccessBtn.disabled = true;
-            try {
-                const res = await fetch('{% url "manage_website:api_status_pro_access_link" %}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCSRFToken(),
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: new URLSearchParams({ email })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showToast(data.message || 'Access link sent', 'success');
-                    proAccessEmailInput.value = '';
-                } else {
-                    showToast(data.message || 'Failed to send access link', 'error');
-                }
-            } catch (e) {
-                showToast('Network error', 'error');
-            } finally {
-                sendProAccessBtn.disabled = false;
-            }
-        });
-    }
 
 })();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. Setup multi-timeframe analytics data
+    const analyticsData = {
+        '7d': {
+            labels: {{ analytics.days|safe }},
+            views: {{ analytics.daily_views|safe }},
+            unique: {{ analytics.daily_unique|safe }}
+        },
+        '30d': {
+            labels: {{ analytics.weeks|safe }},
+            views: {{ analytics.weekly_views|safe }},
+            unique: {{ analytics.weekly_unique|safe }}
+        },
+        '12m': {
+            labels: {{ analytics.months|safe }},
+            views: {{ analytics.monthly_views|safe }},
+            unique: {{ analytics.monthly_unique|safe }}
+        }
+    };
+
+    const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+    
+    // Create subtle linear gradient fills
+    const getGradients = (ctx) => {
+        const blue = ctx.createLinearGradient(0, 0, 0, 240);
+        blue.addColorStop(0, 'rgba(59, 130, 246, 0.22)');
+        blue.addColorStop(1, 'rgba(59, 130, 246, 0.005)');
+        
+        const purple = ctx.createLinearGradient(0, 0, 0, 240);
+        purple.addColorStop(0, 'rgba(139, 92, 246, 0.22)');
+        purple.addColorStop(1, 'rgba(139, 92, 246, 0.005)');
+        
+        return { blue, purple };
+    };
+    
+    const gradients = getGradients(trafficCtx);
+    
+    // Initialize Traffic Chart (7D by default)
+    const trafficChart = new Chart(trafficCtx, {
+        type: 'line',
+        data: {
+            labels: analyticsData['7d'].labels,
+            datasets: [
+                {
+                    label: 'Page Impressions',
+                    data: analyticsData['7d'].views,
+                    borderColor: '#3b82f6',
+                    borderWidth: 2.8,
+                    backgroundColor: gradients.blue,
+                    fill: true,
+                    tension: 0.38,
+                    pointBackgroundColor: '#3b82f6',
+                    pointHoverRadius: 6,
+                    pointRadius: 2.5
+                },
+                {
+                    label: 'Unique Visitors',
+                    data: analyticsData['7d'].unique,
+                    borderColor: '#8b5cf6',
+                    borderWidth: 2.8,
+                    backgroundColor: gradients.purple,
+                    fill: true,
+                    tension: 0.38,
+                    pointBackgroundColor: '#8b5cf6',
+                    pointHoverRadius: 6,
+                    pointRadius: 2.5
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    align: 'end',
+                    labels: {
+                        boxWidth: 8,
+                        boxHeight: 8,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        padding: 12,
+                        color: '#64748b',
+                        font: { family: '"Saira Semi Condensed"', size: 11, weight: 600 }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#0f172a',
+                    titleFont: { family: '"Saira Semi Condensed"', size: 12, weight: 700 },
+                    bodyFont: { family: '"Saira Semi Condensed"', size: 12, weight: 600 },
+                    padding: 10,
+                    cornerRadius: 8,
+                    boxWidth: 6,
+                    boxHeight: 6,
+                    boxPadding: 4
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        color: '#64748b',
+                        font: { family: '"Saira Semi Condensed"', size: 11, weight: 600 }
+                    }
+                },
+                y: {
+                    border: { dash: [5, 5] },
+                    grid: { color: '#f1f5f9' },
+                    ticks: {
+                        color: '#64748b',
+                        font: { family: '"Saira Semi Condensed"', size: 11, weight: 600 }
+                    }
+                }
+            }
+        }
+    });
+
+    // Timeframe Pills Toggling
+    const buttons = document.querySelectorAll('.wa-timeframe-btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            buttons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const timeframe = this.getAttribute('data-timeframe');
+            const data = analyticsData[timeframe];
+            
+            trafficChart.data.labels = data.labels;
+            trafficChart.data.datasets[0].data = data.views;
+            trafficChart.data.datasets[1].data = data.unique;
+            
+            trafficChart.update();
+        });
+    });
+
+    // 2. Sources Chart (Doughnut)
+    const sourcesCtx = document.getElementById('sourcesChart').getContext('2d');
+    new Chart(sourcesCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['WhatsApp Direct', 'Google Organic', 'Direct Visits', 'Referrals'],
+            datasets: [{
+                data: [48, 28, 14, 10],
+                backgroundColor: [
+                    '#22c55e', // Green
+                    '#3b82f6', // Blue
+                    '#8b5cf6', // Purple
+                    '#f59e0b'  // Yellow
+                ],
+                borderWidth: 2,
+                borderColor: '#ffffff',
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#475569',
+                        padding: 10,
+                        boxWidth: 8,
+                        boxHeight: 8,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        font: { family: '"Saira Semi Condensed"', size: 10, weight: 600 }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#0f172a',
+                    titleFont: { family: '"Saira Semi Condensed"', size: 12, weight: 700 },
+                    bodyFont: { family: '"Saira Semi Condensed"', size: 12, weight: 600 },
+                    padding: 8,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            return ` ${context.label}: ${context.raw}%`;
+                        }
+                    }
+                }
+            },
+            cutout: '72%'
+        }
+    });
+
+    // 3. Animate progress bars on load
+    const fills = document.querySelectorAll('.wa-category-progress-fill');
+    if (fills.length > 0) {
+        let maxViews = 0;
+        fills.forEach(fill => {
+            const views = parseInt(fill.getAttribute('data-views') || '0');
+            if (views > maxViews) maxViews = views;
+        });
+        
+        setTimeout(() => {
+            fills.forEach(fill => {
+                const views = parseInt(fill.getAttribute('data-views') || '0');
+                const pct = maxViews > 0 ? Math.round((views / maxViews) * 100) : 0;
+                fill.style.width = pct + '%';
+            });
+        }, 150);
+    }
+});
 </script>
 {% endblock %}

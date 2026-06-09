@@ -9,21 +9,6 @@ Usage:
     python build_bundles.py          # Build all bundles (production, minified)
     python build_bundles.py --dev    # Build without minification (faster)
     python build_bundles.py --clean  # Remove dist/ folder
-
-Bundles produced:
-    JS:
-      - dist/js/core.min.js           (every page)
-      - dist/js/idcard-actions.min.js  (idcard-actions page)
-      - dist/js/cropper.min.js         (adarsh-cropper page)
-      - dist/js/manage-client.min.js   (manage-client page)
-      - dist/js/manage-staff.min.js    (manage-staff page)
-      - dist/js/group-setting.min.js   (group-setting page)
-      - dist/js/dashboard.min.js       (dashboard/index page)
-      - dist/js/cardprint.min.js       (print-cards, reprint-cards pages)
-    CSS:
-      - dist/css/core.min.css          (base styles: fonts + common + global-search)
-      - dist/css/idcard-actions.min.css (idcard page styles)
-      - dist/css/cropper.min.css       (cropper page styles)
 """
 
 import hashlib
@@ -41,7 +26,7 @@ DIST_CSS = STATIC / "dist" / "css"
 # Each bundle is (output_name, [list of source files relative to static/])
 
 JS_BUNDLES = [
-    # ── Core: loaded on every panel/admin page ──
+    # ── Core: loaded on every dashboard page ──
     (
         "core.min.js",
         [
@@ -56,94 +41,6 @@ JS_BUNDLES = [
             "js/core/confirmation-code.js",
             "js/core/download-manager.js",
             "js/init.js",
-            "js/global-search.js",
-            "js/notification-bell.js",
-        ],
-    ),
-    # ── IDCard Actions: 20 modules → 1 bundle ──
-    (
-        "idcard-actions.min.js",
-        [
-            "js/idcard-actions-core-state.js",
-            "js/idcard-actions-core-init.js",
-            "js/idcard-actions-table-state.js",
-            "js/idcard-actions-table-render-row.js",
-            "js/idcard-actions-table-render-main.js",
-            "js/idcard-actions-table-load.js",
-            "js/idcard-actions-search-filters.js",
-            "js/idcard-actions-search-input.js",
-            "js/idcard-actions-upload-ui.js",
-            "js/idcard-actions-upload-logic.js",
-            "js/idcard-actions-download-logic.js",
-            "js/idcard-actions-download-modals.js",
-            "js/idcard-actions-download-init.js",
-            "js/idcard-actions-modal-view-helpers.js",
-            "js/idcard-actions-modal-view-render.js",
-            "js/idcard-actions-modal-delete.js",
-            "js/idcard-actions-modal-form-data.js",
-            "js/idcard-actions-modal-form-ops.js",
-            "js/idcard-actions-api-status.js",
-            "js/idcard-actions-api-bulk.js",
-            "js/idcard-actions-crop.js",
-            "js/idcard-actions-edit-ui.js",
-            "js/idcard-actions-edit-logic.js",
-            "js/idcard-actions.js",
-        ],
-    ),
-    # ── Manage Client ──
-    (
-        "manage-client.min.js",
-        [
-            "js/manage-client-ui.js",
-            "js/manage-client-api.js",
-            "js/manage-client-handlers.js",
-            "js/manage-client-search.js",
-        ],
-    ),
-    # ── Manage Staff (admin panel) ──
-    (
-        "manage-staff.min.js",
-        [
-            "js/manage-staff-state.js",
-            "js/manage-staff-drawer.js",
-            "js/manage-staff-api.js",
-            "js/manage-staff-handlers.js",
-            "js/manage-staff-search.js",
-        ],
-    ),
-    # ── Manage Staff Common (client portal) ──
-    (
-        "manage-staff-common.min.js",
-        [
-            "js/manage-staff-common-api.js",
-            "js/manage-staff-common-drawer.js",
-            "js/manage-staff-common-list.js",
-            "js/manage-client-staff.js",
-        ],
-    ),
-    # ── Group Setting ──
-    (
-        "group-setting.min.js",
-        [
-            "js/group-setting-api.js",
-            "js/group-setting-ui.js",
-            "js/group-setting-events.js",
-        ],
-    ),
-    # ── Dashboard (index page) ──
-    (
-        "dashboard.min.js",
-        [
-            "js/dashboard-ui.js",
-            "js/dashboard-actions.js",
-        ],
-    ),
-    # ── Cardprint shared (view helpers used by print-cards & reprint-cards) ──
-    (
-        "cardprint-shared.min.js",
-        [
-            "js/idcard-actions-modal-view-helpers.js",
-            "js/idcard-actions-modal-view-render.js",
         ],
     ),
 ]
@@ -151,7 +48,7 @@ JS_BUNDLES = [
 # ─── CSS Bundle Definitions ──────────────────────────────────────────────
 
 CSS_BUNDLES = [
-    # ── Core CSS (loaded on every panel page) ──
+    # ── Core CSS (loaded on every dashboard page) ──
     (
         "core.min.css",
         [
@@ -160,32 +57,7 @@ CSS_BUNDLES = [
             "css/global-search.css",
         ],
     ),
-    # ── IDCard Actions CSS (all sub-files expanded, no @import) ──
-    (
-        "idcard-actions.min.css",
-        [
-            "css/idcard-side-modal.css",
-            "css/idcard-action-bar.css",
-            "css/idcard-table.css",
-            "css/idcard-upload-wizard.css",
-            "css/idcard-modals.css",
-            "css/client-cards.css",
-            "css/idcard-actions-enhanced.css",
-            "css/flatpickr-theme.css",
-        ],
-    ),
-    # ── Dashboard CSS (replaces dashboard.css @import chain) ──
-    (
-        "dashboard.min.css",
-        [
-            "css/dashboard-layout.css",
-            "css/dashboard-stats.css",
-            "css/dashboard-table.css",
-            "css/dashboard-actions.css",
-            "css/dashboard-activity.css",
-        ],
-    ),
-    # ── Website Admin CSS (replaces website-admin.css @import chain) ──
+    # ── Website Admin CSS ──
     (
         "wa.min.css",
         [

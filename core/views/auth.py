@@ -10,9 +10,6 @@ from accounts.views import (
     ForgotPasswordAPIView,
     VerifyOTPAPIView,
     ResetPasswordAPIView,
-    ImpersonateStartAPIView,
-    ImpersonateStopAPIView,
-    ImpersonateListAPIView,
 )
 
 login_view = LoginPageView.as_view()
@@ -22,10 +19,6 @@ api_login = LoginAPIView.as_view()
 api_forgot_password = ForgotPasswordAPIView.as_view()
 api_verify_otp = VerifyOTPAPIView.as_view()
 api_reset_password = ResetPasswordAPIView.as_view()
-
-api_impersonate_start = ImpersonateStartAPIView.as_view()
-api_impersonate_stop = ImpersonateStopAPIView.as_view()
-api_impersonate_users = ImpersonateListAPIView.as_view()
 
 def inactive_view(request):
     from django.shortcuts import render

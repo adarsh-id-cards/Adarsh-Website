@@ -17,11 +17,21 @@ def error_403(request, exception=None):
     }, status=403)
 
 def error_404(request, exception=None):
-    return render(request, 'errors/error.html', {
+    home_url = '/'
+    user = getattr(request, 'user', None)
+    if user and user.is_authenticated:
+        home_url = '/dash/'
+
+    template_name = 'errors/error.html'
+    if request.path.startswith('/app/'):
+        template_name = 'errors/error_mobile.html'
+
+    return render(request, template_name, {
         'status_code': 404, 
         'title': 'Page Not Found',
         'heading': 'Lost in the Ether?',
-        'message': 'The page you are looking for has been moved, deleted, or never existed in the first place.'
+        'message': 'The page you are looking for has been moved, deleted, or never existed in the first place.',
+        'home_url': home_url,
     }, status=404)
 
 def error_500(request):

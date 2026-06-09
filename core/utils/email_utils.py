@@ -47,9 +47,10 @@ def send_emergency_panel_access_email(target_email, request=None, issued_by=None
     send_html_email_async('Emergency Panel Access', 'Access link: ' + login_url, html_content, settings.DEFAULT_FROM_EMAIL, [target_email])
     return True, "Access link sent"
 
-def get_password_reset_otp_email_template(name, otp, expiry_minutes=10):
+def get_password_reset_otp_email_template(name=None, otp=None, expiry_minutes=10, **kwargs):
     """Satisfy legacy accounts import."""
-    body_html = f"<p>Hello {escape(name)},</p><p>Your OTP for password reset is: <strong>{escape(str(otp))}</strong></p><p>Valid for {expiry_minutes} minutes.</p>"
+    display_name = name or kwargs.get('user_name') or 'User'
+    body_html = f"<p>Hello {escape(display_name)},</p><p>Your OTP for password reset is: <strong>{escape(str(otp))}</strong></p><p>Valid for {expiry_minutes} minutes.</p>"
     html_content = build_unified_email_html(title='Password Reset OTP', body_html=body_html)
     return html_content, f"Your OTP for password reset is: {otp}"
 

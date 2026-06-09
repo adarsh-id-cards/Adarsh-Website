@@ -11,9 +11,6 @@ from .auth import (
     api_forgot_password,
     api_verify_otp,
     api_reset_password,
-    api_impersonate_start,
-    api_impersonate_stop,
-    api_impersonate_users,
 )
 
 from .base import (
@@ -27,6 +24,7 @@ from .settings_api import (
     api_get_profile,
     api_update_profile,
     api_change_password,
+    api_upload_profile_image,
 )
 
 from .user_api import (

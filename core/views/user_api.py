@@ -90,8 +90,8 @@ def api_user_update(request, pk):
 def api_user_delete(request, pk):
     """Deactivate or delete a user."""
     user = get_object_or_404(User, pk=pk)
-    if user.is_superuser or user.role == 'pro_user':
-        return JsonResponse({'success': False, 'message': 'Cannot delete super admin or pro user via API'}, status=403)
+    if user.is_superuser:
+        return JsonResponse({'success': False, 'message': 'Cannot delete super admin via API'}, status=403)
     
     user.is_active = False
     user.save()

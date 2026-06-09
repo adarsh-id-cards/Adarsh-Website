@@ -37,9 +37,7 @@ Styles:
   {% endif %}
 {% else %}
 <div class="user-avatar-placeholder user-avatar-placeholder--{{ avatar_role }} user-avatar-placeholder--{{ avatar_size }}">
-  {% if avatar_role == 'pro_user' %}
-  <i class="fa-solid fa-user-tie"></i>
-  {% elif avatar_role == 'super_admin' %}
+  {% if avatar_role == 'super_admin' %}
   <i class="fa-solid fa-crown"></i>
   {% elif avatar_role == 'admin_staff' %}
   <i class="fa-solid fa-user-shield"></i>
@@ -50,8 +48,7 @@ Styles:
 {% endif %}
 {% if show_label %}
 <span class="user-avatar-label user-avatar-label--{{ avatar_role }}">
-    {% if avatar_role == 'pro_user' %}Pro User
-    {% elif avatar_role == 'super_admin' %}Super Admin
+    {% if avatar_role == 'super_admin' %}Super Admin
     {% elif avatar_role == 'admin_staff' %}Operator
     {% elif avatar_role == 'client' %}Client
     {% elif avatar_role == 'client_staff' %}Assistent

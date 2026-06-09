@@ -3,6 +3,8 @@ from django.urls import path, include, reverse
 from django.conf import settings
 from django.contrib.auth.views import redirect_to_login
 from website import seo
+from website import views as website_views
+from manage_website import views as manage_views
 from core.views.health import health_check
 from core import views as core_views
 
@@ -96,8 +98,7 @@ urlpatterns = [
     path('robots.txt', seo.robots_txt, name='robots_txt'),
     path('sitemap.xml', seo.sitemap_xml, name='sitemap_view'),
 
-    # Django admin
-    path('admin/', admin.site.urls),
+
 
     # Local-only debug toolbar route.
     # Debug Toolbar is enabled in DEBUG mode only and helps inspect SQL/query
@@ -140,17 +141,16 @@ urlpatterns += [
 
     # ==================== API COMPATIBILITY (ROOT /api/*) ====================
 
-    # ==================== ADMIN PANEL (/panel/) ====================
-    # All internal/admin routes live under /panel/
-    path('panel/', include('core.urls')),
-    path('dash/auth/', include('accounts.urls')),
-
-    # ==================== MANAGE WEBSITE (/dash) ====================
-    # Website management dashboard on main domain (adarshbhopal.in/dash)
+    # ==================== ADMIN PANEL (/dash/) ====================
+    # Route /dash/ directly to website management views
     path('dash/', include('manage_website.urls')),
+    path('dash/auth/', include('accounts.urls')),
+    path('dash/', include('core.urls')),
+    path('dash/', manage_views.website_dashboard, name='dashboard'),
 
     # ==================== PUBLIC WEBSITE (/) ====================
     # Public-facing website at root — must be LAST to avoid catching /panel/ routes
+    path('app/manifest.json', website_views.pwa_manifest, name='pwa_manifest'),
     path('', include('website.urls')),
 ]
 

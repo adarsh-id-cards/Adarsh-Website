@@ -620,3 +620,28 @@ class WebsiteClientLogo(models.Model):
 
     def __str__(self):
         return self.name
+
+
+# ==========================================
+# 7. TRAFFIC & REACH TRACKING
+# ==========================================
+
+class VisitorHit(models.Model):
+    """
+    Tracks public website views and channels for dynamic reach analytics.
+    """
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    session_key = models.CharField(max_length=40, null=True, blank=True)
+    path = models.CharField(max_length=255)
+    referer = models.CharField(max_length=500, null=True, blank=True)
+    channel = models.CharField(max_length=20, default='direct', db_index=True) # whatsapp, google, direct, referral
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = 'Visitor Hit'
+        verbose_name_plural = 'Visitor Hits'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.path} viewed via {self.channel} at {self.created_at}"
+

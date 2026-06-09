@@ -14,7 +14,6 @@ class CustomUserManager(UserManager):
 class User(AbstractUser):
     ROLE_CHOICES = [
         ('admin', 'Admin'),
-        ('pro', 'Pro'),
         ('operator', 'Operator'),
     ]
     phone = models.CharField(max_length=15, blank=True, null=True)
@@ -25,13 +24,9 @@ class User(AbstractUser):
     objects = CustomUserManager()
 
     def save(self, *args, **kwargs):
-        # Admin and Pro have full staff/superuser access by default
-        if self.role in ('admin', 'pro') or self.is_superuser:
+        if self.role == 'admin' or self.is_superuser:
             self.is_staff = True
-            if self.role == 'admin':
-                self.is_superuser = True
-            else:
-                self.is_superuser = False
+            self.is_superuser = True
         else:
             # Operators are staff but not superusers
             self.is_staff = True
@@ -95,3 +90,47 @@ class ActivityLog(models.Model):
     def icon_color(self):
         colors = {'login': 'verify', 'logout': 'edit', 'password_reset': 'approve', 'website_update': 'edit', 'settings_update': 'edit'}
         return colors.get(self.action, 'edit')
+
+class EmailLog(models.Model):
+    EMAIL_TYPE_WELCOME = 'welcome'
+    EMAIL_TYPE_TEMP_PASSWORD = 'temp_password'
+    EMAIL_TYPE_PASSWORD_CHANGE = 'password_change'
+    EMAIL_TYPE_OTP_RESET = 'otp_reset'
+    EMAIL_TYPE_SYSTEM = 'system'
+
+    EMAIL_TYPE_CHOICES = [
+        (EMAIL_TYPE_WELCOME, 'Welcome / Activation'),
+        (EMAIL_TYPE_TEMP_PASSWORD, 'Temp Password'),
+        (EMAIL_TYPE_PASSWORD_CHANGE, 'Password Change Notice'),
+        (EMAIL_TYPE_OTP_RESET, 'Password Reset OTP'),
+        (EMAIL_TYPE_SYSTEM, 'System / Custom'),
+    ]
+
+    STATUS_ON_HOLD = 'on_hold'
+    STATUS_PENDING = 'pending'
+    STATUS_SENT = 'sent'
+    STATUS_FAILED = 'failed'
+
+    STATUS_CHOICES = [
+        (STATUS_ON_HOLD, 'On Hold'),
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_SENT, 'Sent'),
+        (STATUS_FAILED, 'Failed'),
+    ]
+
+    recipient_name = models.CharField(max_length=200, blank=True, default='')
+    recipient_email = models.EmailField(db_index=True)
+    subject = models.CharField(max_length=300, blank=True, default='')
+    body_text = models.TextField(blank=True, default='')
+    body_html = models.TextField(blank=True, default='')
+    email_type = models.CharField(max_length=30, choices=EMAIL_TYPE_CHOICES, default=EMAIL_TYPE_SYSTEM, db_index=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING, db_index=True)
+    error_message = models.TextField(blank=True, default='')
+    sent_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.recipient_email}: {self.subject} ({self.status})"

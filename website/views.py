@@ -244,118 +244,41 @@ def _sanitize_email_header_value(value, *, max_length=255):
     return collapsed[:max_length]
 
 
-def _normalize_panel_next_target(raw_next, fallback_target):
-    """Normalize and validate next target against panel URLConf routes."""
-    fallback_parsed = urlsplit(str(fallback_target or '/auth/login/'))
-    fallback_path = fallback_parsed.path if fallback_parsed.path.startswith('/') else '/auth/login/'
-    if fallback_path == '/':
-        fallback_path = '/auth/login/'
-    fallback_params = dict(parse_qsl(fallback_parsed.query, keep_blank_values=True))
-
-    parsed = urlsplit(str(raw_next or ''))
-    next_path = parsed.path or fallback_path
-
-    if next_path == '/panel':
-        next_path = '/'
-    elif next_path.startswith('/panel/'):
-        next_path = next_path[len('/panel'):]
-
-    next_path = next_path.replace('\\', '/').strip()
-    while '//' in next_path:
-        next_path = next_path.replace('//', '/')
-
-    if not next_path.startswith('/'):
-        return fallback_path, fallback_params
-
-    normalized_parts = []
-    for part in next_path.split('/'):
-        if not part or part == '.':
-            continue
-        if part == '..':
-            return fallback_path, fallback_params
-        normalized_parts.append(part)
-
-    normalized_path = '/' + '/'.join(normalized_parts)
-    if (parsed.path or '').endswith('/') and normalized_path != '/':
-        normalized_path = f'{normalized_path}/'
-    if normalized_path == '/':
-        normalized_path = fallback_path
-
-    try:
-        resolve(normalized_path, urlconf='config.urls_panel')
-    except Resolver404:
-        return fallback_path, fallback_params
-
-    params = dict(parse_qsl(parsed.query, keep_blank_values=True))
-    return normalized_path, params
-
-
 @require_GET
 def pwa_manifest(request):
     """Public website PWA manifest for desktop/mobile browser install."""
-    host = request.get_host().split(':')[0].lower()
-    panel_domain = str(getattr(_s, 'PANEL_DOMAIN', '') or '').strip().lower()
-    is_panel_host = bool(getattr(request, '_is_panel_subdomain', False)) or (panel_domain and host == panel_domain)
-
-    if is_panel_host:
-        manifest = {
-            'name': 'Adarsh ID Cards Panel',
-            'short_name': 'Adarsh Panel',
-            'id': '/',
-            'start_url': '/',
-            'scope': '/',
-            'display': 'standalone',
-            'display_override': ['standalone', 'minimal-ui', 'browser'],
-            'background_color': '#f4f8ff',
-            'theme_color': '#3498db',
-            'description': 'Admin panel workspace for Adarsh ID Cards.',
-            'icons': [
-                {
-                    'src': '/static/mobile/images/icon-192.png',
-                    'sizes': '192x192',
-                    'type': 'image/png',
-                    'purpose': 'any maskable',
-                },
-                {
-                    'src': '/static/mobile/images/icon-512.png',
-                    'sizes': '512x512',
-                    'type': 'image/png',
-                    'purpose': 'any maskable',
-                },
-            ],
-        }
-    else:
-        manifest = {
-            'name': 'Adarsh ID Cards Website',
-            'short_name': 'Adarsh',
-            'id': '/',
-            # Open panel directly from installed website PWA to avoid homepage-first flow.
-            'start_url': '/panel-entry/?next=/auth/login/&src=pwa-launch',
-            'scope': '/',
-            'display': 'standalone',
-            'display_override': ['standalone', 'minimal-ui', 'browser'],
-            'background_color': '#ffffff',
-            'theme_color': '#3498db',
-            'description': 'Professional ID card solutions and public company website.',
-            'icons': [
-                {
-                    'src': '/static/mobile/images/icon-192.png',
-                    'sizes': '192x192',
-                    'type': 'image/png',
-                    'purpose': 'any maskable',
-                },
-                {
-                    'src': '/static/mobile/images/icon-512.png',
-                    'sizes': '512x512',
-                    'type': 'image/png',
-                    'purpose': 'any maskable',
-                },
-            ],
-        }
+    manifest = {
+        'name': 'Adarsh ID Cards Website',
+        'short_name': 'Adarsh',
+        'id': '/',
+        # Open dashboard directly from installed website PWA to avoid homepage-first flow.
+        'start_url': '/dash/auth/login/?src=pwa-launch',
+        'scope': '/',
+        'display': 'standalone',
+        'display_override': ['standalone', 'minimal-ui', 'browser'],
+        'background_color': '#ffffff',
+        'theme_color': '#3498db',
+        'description': 'Professional ID card solutions and public company website.',
+        'icons': [
+            {
+                'src': '/static/mobile/images/icon-192.png',
+                'sizes': '192x192',
+                'type': 'image/png',
+                'purpose': 'any maskable',
+            },
+            {
+                'src': '/static/mobile/images/icon-512.png',
+                'sizes': '512x512',
+                'type': 'image/png',
+                'purpose': 'any maskable',
+            },
+        ],
+    }
     response = JsonResponse(manifest)
     response['Content-Type'] = 'application/manifest+json'
     response['Cache-Control'] = 'public, max-age=3600'
     return response
+
 
 
 @require_GET
@@ -744,31 +667,6 @@ def privacy_policy(request):
     })
     return render(request, 'website/privacy-policy.html', context)
 
-
-def panel_entry(request):
-    """Generate a signed panel-entry token and redirect to panel login/path."""
-    from django.core.signing import TimestampSigner
-
-    ua = request.META.get('HTTP_USER_AGENT', '')
-    is_mobile_ua = any(k in ua for k in ['Android', 'iPhone', 'iPad', 'iPod', 'webOS', 'BlackBerry', 'IEMobile', 'Opera Mini'])
-
-    default_next = '/app/login/?install=1' if is_mobile_ua else '/auth/login/'
-    raw_next = request.GET.get('next', '')
-    next_path, params = _normalize_panel_next_target(raw_next, default_next)
-
-    signer = TimestampSigner(salt='panel-entry-gate')
-    params['panel_entry_token'] = signer.sign('website-panel-entry')
-    query = urlencode(params)
-
-    panel_base = (_s.PANEL_URL or '').rstrip('/')
-    if panel_base:
-        destination = f'{panel_base}{next_path}'
-    else:
-        destination = f'/panel{next_path}'
-
-    if query:
-        destination = f'{destination}?{query}'
-    return redirect(destination)
 
 
 def download_app(request):

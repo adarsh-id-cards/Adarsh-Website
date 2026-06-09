@@ -70,3 +70,13 @@ def api_change_password(request):
     except Exception as e:
         logger.exception("Settings API error (change_password): %s", e)
         return JsonResponse({'success': False, 'message': 'An error occurred'})
+
+@login_required
+@require_http_methods(["POST"])
+def api_upload_profile_image(request):
+    """Fallback profile image upload API."""
+    success, message, _ = UserProfileService.upload_profile_image(request.user, None)
+    return JsonResponse({
+        'success': success,
+        'message': message,
+    })

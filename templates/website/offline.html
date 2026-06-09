@@ -158,15 +158,15 @@
         <h1 class="offline-title">Website is Offline</h1>
         <p class="offline-text">
             This website is currently under maintenance and not available to the public.
-            If you are an administrator, you can log in to the management panel below.
+            If you are an administrator, you can log in to the management dashboard below.
         </p>
-        <a href="{% url 'website:panel_entry' %}" class="offline-btn">
+        <a href="{% url 'accounts:login' %}" class="offline-btn">
             <i class="fa-solid fa-right-to-bracket"></i>
-            Go to Admin Panel
+            Go to Admin Dashboard
         </a>
         <div class="offline-footer">
             <i class="fa-solid fa-shield-halved"></i>
-            This site is managed by the admin panel
+            This site is managed by the admin dashboard
         </div>
     </div>
 </body>

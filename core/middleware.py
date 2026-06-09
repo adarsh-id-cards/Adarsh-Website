@@ -40,82 +40,6 @@ def _is_task_polling_path(path: str) -> bool:
 
 
 
-class SubdomainRoutingMiddleware:
-    """
-    Routes requests to different URL configurations based on the subdomain.
-
-    - WEBSITE_DOMAIN (e.g. www.adarshbhopal.in)  → config.urls_website
-    - PANEL_DOMAIN   (e.g. panel.adarshbhopal.in) → config.urls_panel
-
-    On the panel subdomain, any incoming path that starts with /panel/ is
-    silently rewritten (prefix stripped) so that old bookmarks keep working.
-
-    In local development (127.0.0.1, localhost, or any unknown host),
-    paths starting with /panel/ are automatically routed through
-    config.urls_panel with the prefix stripped — so /panel/auth/login/
-    renders the page, and JS API calls like /api/auth/check-email/
-    resolve correctly against urls_panel.
-
-    Must be placed BEFORE WhiteNoiseMiddleware in MIDDLEWARE so that the
-    urlconf is set before any downstream middleware resolves URLs.
-    """
-
-    def __init__(self, get_response):
-        self.get_response = get_response
-        self.website_domain = getattr(django_settings, 'WEBSITE_DOMAIN', '').lower().strip()
-        self.panel_domain = getattr(django_settings, 'PANEL_DOMAIN', '').lower().strip()
-
-    def __call__(self, request):
-        host = request.get_host().split(':')[0].lower()  # strip port
-        _set_panel_cookie = False
-
-        if self.website_domain and host == self.website_domain:
-            request.urlconf = 'config.urls_website'
-            request._is_panel_subdomain = False
-        elif self.panel_domain and host == self.panel_domain:
-            request.urlconf = 'config.urls_panel'
-            request._is_panel_subdomain = True
-            # Backward compat: strip /panel/ prefix so old bookmarks still work
-            if request.path_info.startswith('/panel/'):
-                request.path_info = request.path_info[len('/panel'):]
-                request.path = request.path_info
-            elif request.path_info == '/panel':
-                request.path_info = '/'
-                request.path = request.path_info
-        elif getattr(django_settings, 'DEBUG', False) and (request.path_info.startswith('/panel/') or request.path_info == '/panel'):
-            # Local dev / unknown host accessing /panel/… paths:
-            # Route through urls_panel and strip the prefix.  Also set a
-            # context cookie so that subsequent JS fetch() calls (which use
-            # root-relative paths like /api/…) are routed through urls_panel.
-            request.urlconf = 'config.urls_panel'
-            request._is_panel_subdomain = True
-            _set_panel_cookie = True
-            request.path_info = request.path_info[len('/panel'):]  # /panel/auth/… → /auth/…
-            if not request.path_info:
-                request.path_info = '/'
-            request.path = request.path_info
-        elif getattr(django_settings, 'DEBUG', False) and request.COOKIES.get('_panel_ctx') == '1':
-            # Local dev: JS API calls from a panel page (e.g. /api/auth/…).
-            # The cookie was set when the /panel/… page was first loaded.
-            request.urlconf = 'config.urls_panel'
-            request._is_panel_subdomain = True
-        else:
-            # Unknown host, non-panel path — use default ROOT_URLCONF
-            request._is_panel_subdomain = False
-
-        response = self.get_response(request)
-
-        # Set / clear the panel context cookie for local dev routing
-        if _set_panel_cookie:
-            response.set_cookie(
-                '_panel_ctx', '1',
-                httponly=True, samesite='Lax', max_age=86400,
-                secure=request.is_secure(),
-            )
-
-        return response
-
-
 class RequestTimingMiddleware:
     """
     Logs request duration and adds Server-Timing header.
@@ -252,6 +176,8 @@ class PermissionValidationMiddleware:
         '/sitemap.xml',
         '/panel-entry/',
         '/dash/auth/',
+        '/manifest.json',
+        '/sw.js',
     ]
     
     def __init__(self, get_response):
@@ -259,19 +185,13 @@ class PermissionValidationMiddleware:
     
     @staticmethod
     def _panel_prefix(request):
-        """Return the panel URL prefix: '' on panel subdomain, '/panel' on local dev."""
-        if getattr(request, '_is_panel_subdomain', False):
-            return ''
-        return '/panel'
+        """Return the panel URL prefix."""
+        return '/dash'
     
     @staticmethod
     def _is_panel_path(request):
         """Check if the current request is a panel route."""
-        if getattr(request, '_is_panel_subdomain', False):
-            # On the panel subdomain, all paths are panel paths
-            # (SubdomainRoutingMiddleware already stripped /panel/ prefix)
-            return True
-        return request.path.startswith('/panel/')
+        return request.path.startswith('/dash/')
     
     def __call__(self, request):
         # Skip for exempt URLs
@@ -352,9 +272,9 @@ class PermissionValidationMiddleware:
             if path.startswith(exempt_path) or f'{path}/'.startswith(exempt_path):
                 return True
         
-        # On local dev: public website pages (not under /panel/) don't need auth
+        # On local dev: public website pages (not under /dash/) don't need auth
         if not getattr(request, '_is_panel_subdomain', False):
-            if not path.startswith('/panel/') and not path.startswith('/api/'):
+            if not path.startswith('/dash/') and not path.startswith('/api/'):
                 return True
         
         return False
@@ -640,11 +560,9 @@ class WebsiteOfflineMiddleware:
     bypass this middleware since there are no public website pages.
     """
 
-    # Paths that should NEVER be blocked (admin panel, static, media, etc.)
     BYPASS_PREFIXES = (
-        '/panel/',
+        '/dash/',
         '/panel-entry/',
-        '/admin/',
         '/static/',
         '/media/',
         '/favicon.ico',
@@ -657,10 +575,6 @@ class WebsiteOfflineMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        # Panel subdomain has no public website routes — skip entirely
-        if getattr(request, '_is_panel_subdomain', False):
-            return self.get_response(request)
-
         # Only intercept public-facing website routes
         if self._is_public_website_route(request.path):
             from website.models import WebsiteStatus
@@ -710,7 +624,7 @@ class SessionIdleTimeoutMiddleware:
         logger.info("SessionExpiry: user=%s reason=%s", username, reason)
         logout(request)
 
-        prefix = '' if getattr(request, '_is_panel_subdomain', False) else '/dash'
+        prefix = '/dash'
         login_url = f'{prefix}/auth/login/'
 
         is_ajax = (
@@ -876,8 +790,7 @@ class SecurityHeadersMiddleware:
         if self._permissions_policy:
             response['Permissions-Policy'] = self._permissions_policy
 
-        # Prevent caching of authenticated panel pages (security best practice)
-        is_panel = getattr(request, '_is_panel_subdomain', False) or request.path.startswith('/panel/')
+        is_panel = request.path.startswith('/dash/')
         if is_panel and hasattr(request, 'user') and request.user.is_authenticated:
             if 'Cache-Control' not in response:
                 response['Cache-Control'] = 'no-store, no-cache, must-revalidate, private'
@@ -901,3 +814,79 @@ class PanelEntryGateMiddleware:
 
     def __call__(self, request):
         return self.get_response(request)
+
+
+class TrafficTrackerMiddleware:
+    """
+    Middleware to track public website views (Page Views, Unique Visitors, Inquiry Channels)
+    in the database via the VisitorHit model.
+    """
+    BYPASS_PREFIXES = (
+        '/dash/',
+        '/static/',
+        '/media/',
+        '/favicon.ico',
+        '/robots.txt',
+        '/sitemap.xml',
+        '/api/',
+    )
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # We only record GET requests to public HTML pages
+        if request.method == 'GET':
+            path = request.path
+            # Check bypass prefixes
+            is_public = True
+            for prefix in self.BYPASS_PREFIXES:
+                if path.startswith(prefix):
+                    is_public = False
+                    break
+            
+            # Verify it's not a dashboard request
+            if is_public:
+                # Defer tracking to avoid blocking response delivery
+                # Since SQLite can lock, we wrap the save in a try/except
+                try:
+                    from website.models import VisitorHit
+                    
+                    # Resolve referer
+                    referer = request.META.get('HTTP_REFERER', '')
+                    channel = 'direct'
+                    
+                    # Parse referer or UTM source for channels
+                    utm_source = request.GET.get('utm_source', '').lower()
+                    if utm_source == 'whatsapp' or 'whatsapp' in referer or 'wa.me' in referer:
+                        channel = 'whatsapp'
+                    elif 'google' in referer or 'bing' in referer or 'yahoo' in referer:
+                        channel = 'google'
+                    elif not referer:
+                        channel = 'direct'
+                    else:
+                        channel = 'referral'
+                        
+                    # Get client IP
+                    xff = request.META.get('HTTP_X_FORWARDED_FOR')
+                    ip = xff.split(',')[0].strip() if xff else request.META.get('REMOTE_ADDR', '')
+                    
+                    # Session key
+                    if not request.session.session_key:
+                        request.session.create()
+                    session_key = request.session.session_key
+                    
+                    # Create VisitorHit record
+                    VisitorHit.objects.create(
+                        ip_address=ip,
+                        session_key=session_key,
+                        path=path,
+                        referer=referer[:500] if referer else None,
+                        channel=channel
+                    )
+                except Exception as e:
+                    # Silently fail-safe: don't crash public site views if tracking fails
+                    pass
+
+        return self.get_response(request)
+

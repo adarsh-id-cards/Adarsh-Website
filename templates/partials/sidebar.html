@@ -4,26 +4,14 @@
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <div class="sidebar-logo">
-      <div class="profile" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
-        <img src="{% static 'assets/logo.png' %}" alt="Adarsh ID Cards home" width="26" height="26" style="width:26px;height:26px;display:block;object-fit:contain;">
+      <div class="profile" style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+        <img src="{% static 'assets/logo.png' %}" alt="Adarsh ID Cards home" width="20" height="20" style="width:20px;height:20px;display:block;object-fit:contain;">
       </div>
-      <h3 class="sidebar-brand-title" style="margin:0;font-size:13px;font-weight:700;line-height:1.15;letter-spacing:0.01em;white-space:nowrap;">Adarsh ID Cards</h3>
+      <h3 class="sidebar-brand-title" style="margin:0;font-size:16px;font-weight:700;line-height:1.15;letter-spacing:0.01em;white-space:nowrap;">Adarsh ID Cards</h3>
     </div>
   </div>
   <nav aria-label="Main navigation">
     {% if is_admin or is_pro or is_operator %}
-    <a href="{% url 'dashboard' %}" class="{% if active_page == 'dashboard' %}active{% endif %}">
-      <i class="fa-solid fa-house"></i><span>Dashboard</span>
-    </a>
-    {% endif %}
-    
-    {% if is_admin or is_pro or is_operator %}
-    <!-- Website Management Section -->
-    <div class="nav-section">
-      <div class="nav-section-line"></div>
-      <span class="nav-section-title">Website</span>
-      <div class="nav-section-line"></div>
-    </div>
     <a href="{% url 'manage_website:business' %}" class="{% if active_tab == 'business' %}active{% endif %}">
       <i class="fa-solid fa-building"></i><span>Business Info</span>
     </a>
@@ -40,19 +28,6 @@
       <i class="fa-solid fa-envelope"></i><span>Messages</span>
     </a>
     {% endif %}
-
-    {% if is_admin %}
-    <!-- System Section -->
-    <div class="nav-section">
-      <div class="nav-section-line"></div>
-      <span class="nav-section-title">System</span>
-      <div class="nav-section-line"></div>
-    </div>
-    <a href="/admin/" target="_blank" class="{% if active_page == 'django_admin' %}active{% endif %}">
-      <i class="fa-solid fa-gears"></i><span>Django Admin</span>
-    </a>
-    {% endif %}
-
   </nav>
   <div class="sidebar-footer">
     <div class="sidebar-info">
@@ -73,12 +48,8 @@
   </div>
 </aside>
 <script>
-// Immediately apply sidebar collapsed state to prevent flicker on page load
+// Clear any stored collapsed state to ensure it is always open
 (function(){
-  var c = localStorage.getItem('sidebarCollapsed');
-  if (c === 'true') {
-    document.getElementById('sidebar').classList.add('collapsed');
-    document.body.classList.add('sidebar-collapsed');
-  }
+  localStorage.removeItem('sidebarCollapsed');
 })();
 </script>
