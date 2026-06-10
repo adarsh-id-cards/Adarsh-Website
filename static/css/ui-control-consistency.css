@@ -103,15 +103,25 @@ h6 { font-size: var(--ui-heading-h6-size); }
   font-weight: 700 !important;
 }
 
-/* Decrease logo box size */
-.sidebar-logo .profile {
-  width: 26px !important;
-  height: 26px !important;
-  border-radius: 4px !important;
+/* Sidebar Logo styling matching frontend */
+.sidebar-logo .logo-box {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 6px !important;
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%) !important;
+  border: 1px solid rgba(229, 62, 62, 0.35) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 2px 6px rgba(229, 62, 62, 0.15), inset 0 1px 0 rgba(255,255,255,0.6) !important;
+  flex-shrink: 0 !important;
+  padding: 0 !important;
 }
-.sidebar-logo .profile img {
-  width: 20px !important;
-  height: 20px !important;
+
+.sidebar-logo .logo-img-3d {
+  width: 22px !important;
+  height: 22px !important;
+  object-fit: contain !important;
 }
 
 /* Remove sidebar toggle option (always open) */
@@ -618,3 +628,98 @@ body {
   }
 }
 
+
+/* =============================================================================
+   SIDEBAR USER PROFILE SECTION STYLING
+   ============================================================================= */
+
+.sidebar-user {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 12px 14px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  margin-top: auto !important;
+  background: rgba(0, 0, 0, 0.15) !important;
+}
+
+.sidebar-user .user-avatar {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 8px !important;
+  flex-shrink: 0 !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.sidebar-user .user-avatar .user-avatar-placeholder,
+.sidebar-user .user-avatar img {
+  border-radius: 8px !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.sidebar-user .user-info {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  min-width: 0 !important;
+}
+
+.sidebar-user .user-name {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  margin: 0 !important;
+}
+
+.sidebar-user .user-role {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+  margin: 0 !important;
+}
+
+/* User Avatar Placeholders */
+.user-avatar-placeholder {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  font-weight: 700 !important;
+}
+
+.user-avatar-placeholder--small {
+  font-size: 11px !important;
+}
+.user-avatar-placeholder--medium {
+  font-size: 14px !important;
+}
+.user-avatar-placeholder--large {
+  font-size: 18px !important;
+}
+
+/* Gradients based on role */
+.user-avatar-placeholder--admin,
+.user-avatar-placeholder--super_admin {
+  background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%) !important; /* light red/red theme gradient */
+  color: #ffffff !important;
+}
+
+.user-avatar-placeholder--operator,
+.user-avatar-placeholder--admin_staff {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+}
+
+.user-avatar-placeholder--client,
+.user-avatar-placeholder--client_staff {
+  background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important;
+  color: #ffffff !important;
+}

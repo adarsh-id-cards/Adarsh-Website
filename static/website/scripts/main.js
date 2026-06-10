@@ -64,7 +64,10 @@ function initTypingEffect() {
         const firstLineLen = firstLine.length;
 
         if (charsTyped <= firstLineLen) {
-            return '<span class="typing-line-one">' + renderFirstLine(line, charsTyped) + renderCursor() + '</span>';
+            return (
+                '<span class="typing-line-one">' + renderFirstLine(line, charsTyped) + renderCursor() + '</span>' +
+                '<span class="typing-line-two" style="visibility: hidden;">&nbsp;</span>'
+            );
         }
 
         const secondLineChars = charsTyped - firstLineLen;

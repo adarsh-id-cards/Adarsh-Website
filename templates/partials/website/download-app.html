@@ -1,4 +1,38 @@
 {% load static %}
+<style>
+.app-features-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0 32px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.app-features-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 1.05rem;
+    font-weight: 500;
+    text-align: left;
+}
+.app-features-list li i {
+    color: #fbbf24; /* yellow/gold color */
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+.app-badge {
+    min-width: 220px;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+.app-badge:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+</style>
+
 <section class="download-app-section" id="download-app">
     <div class="hero-grid"></div>
     <div class="container">
@@ -13,7 +47,13 @@
             <!-- Content Side -->
             <div class="app-cta-content">
                 <h3>Download <span class="gradient-text">AdarshID</span> App for Free!</h3>
-                <p>Manage your ID cards efficiently with the AdarshID app. Available now on our website and Google Play Store for seamless card management.</p>
+                
+                <ul class="app-features-list">
+                    <li><i class="fa-solid fa-circle-check"></i> Managing student data</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Work dividing by the assistant</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Requesting card for reprint</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Update student's image by clicking picture</li>
+                </ul>
                 
                 <div class="download-badges">
                     <a href="#" class="app-badge">

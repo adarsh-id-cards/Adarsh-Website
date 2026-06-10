@@ -1224,3 +1224,25 @@ def api_contact_delete(request, pk):
     except Exception as e:
         logging.getLogger(__name__).exception("Contact delete error: %s", e)
         return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.'}, status=500)
+
+
+@require_POST
+@website_edit_required
+def api_contact_mark_all_read(request):
+    """Mark all contact submissions as read."""
+    try:
+        from django.db import transaction
+        from website.models import ContactSubmission
+        
+        with transaction.atomic():
+            updated_count = ContactSubmission.objects.filter(status='new').update(status='read')
+            
+        ActivityService.log_website_update(request, f'marked all contact messages as read ({updated_count} messages)')
+        return JsonResponse({
+            'success': True,
+            'message': f'Marked {updated_count} messages as read',
+            'updated_count': updated_count
+        })
+    except Exception as e:
+        logging.getLogger(__name__).exception("Mark all read error: %s", e)
+        return JsonResponse({'success': False, 'message': 'An error occurred'}, status=500)

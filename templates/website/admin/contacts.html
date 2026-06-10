@@ -19,7 +19,16 @@
         border: 1px solid var(--wa-border);
         border-top: none;
         background: var(--wa-surface);
-        min-height: calc(100vh - 230px);
+        flex: 1;
+        min-height: 0;
+        height: 100%;
+    }
+
+    .clickable-row {
+        cursor: pointer;
+    }
+    .clickable-row:hover td {
+        background-color: var(--wa-surface-soft) !important;
     }
 
     .wa-contacts-panel .notif-actions-left {
@@ -253,6 +262,11 @@
                 <i class="fa-solid fa-rotate-right"></i> Refresh
             </button>
         </div>
+        <div class="notif-actions-right">
+            <button class="btn btn-sm btn-outline-primary" type="button" onclick="markAllContactsRead()">
+                <i class="fa-solid fa-check-double"></i> Mark all as read
+            </button>
+        </div>
     </div>
 
     <div class="notif-table-wrap">
@@ -277,7 +291,7 @@
             </thead>
             <tbody id="contactsBody">
                 {% for c in contacts %}
-                <tr data-id="{{ c.id }}" class="{% if c.status == 'new' %}contact-row-new{% endif %}">
+                <tr data-id="{{ c.id }}" class="clickable-row {% if c.status == 'new' %}contact-row-new{% endif %}" onclick="handleRowClick(event, {{ c.id }})">
                     <td>
                         <div class="contact-sender">
                             <span class="contact-avatar">{{ c.name|first|upper }}</span>
@@ -309,7 +323,7 @@
                             <button class="btn btn-icon" title="View Full Message" onclick="viewContact({{ c.id }})">
                                 <i class="fa-solid fa-eye"></i>
                             </button>
-                            <a href="mailto:{{ c.email }}?subject=Re: {{ c.subject|urlencode }}" class="btn btn-icon" title="Reply via Email">
+                            <a href="mailto:{{ c.email }}?subject=Re: {{ c.subject|urlencode }}" class="btn btn-icon" title="Reply via Email" target="_blank" onclick="handleReplyClick({{ c.id }})">
                                 <i class="fa-solid fa-reply"></i>
                             </a>
                             {% if is_admin or is_pro or perm_website_delete %}
@@ -410,12 +424,62 @@
         </div>
         <div class="wa-modal-footer">
             <button type="button" class="btn btn-neutral btn-icon" onclick="closeContactModal()" title="Close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
-            <a href="#" id="replyEmailBtn" class="btn btn-primary"><i class="fa-solid fa-reply"></i> Reply via Email</a>
+            <a href="#" id="replyEmailBtn" class="btn btn-primary" target="_blank" onclick="handleReplyClick(currentContactId)"><i class="fa-solid fa-reply"></i> Reply via Email</a>
         </div>
     </div>
 </div>
 
 <script>
+let currentContactId = null;
+
+function handleRowClick(event, id) {
+    const target = event.target;
+    if (target.closest('a, button, select, input, option')) {
+        return;
+    }
+    viewContact(id);
+}
+
+function handleReplyClick(id) {
+    if (!id) return;
+    const row = document.querySelector('tr[data-id="' + id + '"]');
+    if (row) {
+        const selectEl = row.querySelector('.contact-status-select');
+        if (selectEl && selectEl.value !== 'replied') {
+            updateContactStatus(id, 'replied', selectEl);
+        }
+    }
+}
+
+function markAllContactsRead() {
+    fetch('/dash/api/contacts/mark-all-read/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            document.querySelectorAll('.contact-row-new').forEach(row => {
+                row.classList.remove('contact-row-new');
+                const selectEl = row.querySelector('.contact-status-select');
+                if (selectEl && selectEl.value === 'new') {
+                    selectEl.value = 'read';
+                    applyStatusSelectClass(selectEl, 'read');
+                }
+            });
+            if (typeof showToast === 'function') showToast(data.message || 'All marked as read', true);
+        } else {
+            if (typeof showToast === 'function') showToast(data.message, false);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        if (typeof showToast === 'function') showToast('Failed to mark all as read', false);
+    });
+}
+
 function onContactStatusFilterChange(status) {
     const url = new URL(window.location.href);
     const params = url.searchParams;
@@ -450,6 +514,7 @@ function applyStatusSelectClass(selectEl, status) {
 }
 
 function viewContact(id) {
+    currentContactId = id;
     fetch('/dash/api/contacts/' + id + '/')
         .then(r => r.json())
         .then(data => {

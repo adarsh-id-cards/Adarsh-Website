@@ -42,11 +42,12 @@
    base.html uses grid-template-rows: topbar 1fr  (2 rows).
    website/admin/base.html has 3 children (topbar, wa-tabs, main-content)
    so we need 3 explicit rows.  */
-.main.wa-page {
-    grid-template-rows: var(--spacing-topbar) auto 1fr;
-}
 .main.wa-page > .main-content {
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
 }
 
 /* ===== TAB NAVIGATION ===== */

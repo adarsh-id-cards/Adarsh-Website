@@ -75,7 +75,7 @@
         </div>
         <div class="wa-stats-grid">
             {% include 'components/stat-card.html' with icon="fa-solid fa-star" value=total_reviews label="Reviews" meta=active_reviews|default:0 meta_suffix="approved" color="green" card_class="wa-stat-card" icon_class="wa-stat-icon" info_class="wa-stat-info" value_class="wa-stat-value" label_class="wa-stat-label" meta_class="wa-stat-meta" %}
-            {% include 'components/stat-card.html' with icon="fa-solid fa-handshake" value=total_clients label="Client Logos" meta=active_clients|default:0 meta_suffix="visible" color="purple" card_class="wa-stat-card" icon_class="wa-stat-icon" info_class="wa-stat-info" value_class="wa-stat-value" label_class="wa-stat-label" meta_class="wa-stat-meta" %}
+            {% include 'components/stat-card.html' with icon="fa-solid fa-handshake" value=total_clients label="Clients" meta=active_clients|default:0 meta_suffix="visible" color="purple" card_class="wa-stat-card" icon_class="wa-stat-icon" info_class="wa-stat-info" value_class="wa-stat-value" label_class="wa-stat-label" meta_class="wa-stat-meta" %}
             {% include 'components/stat-card.html' with icon="fa-solid fa-images" value=total_portfolio label="Portfolio Items" meta=active_portfolio|default:0 meta_suffix="active" color="yellow" card_class="wa-stat-card" icon_class="wa-stat-icon" info_class="wa-stat-info" value_class="wa-stat-value" label_class="wa-stat-label" meta_class="wa-stat-meta" %}
             {% include 'components/stat-card.html' with icon="fa-solid fa-bolt" value=total_features label="Features" color="teal" card_class="wa-stat-card" icon_class="wa-stat-icon" info_class="wa-stat-info" value_class="wa-stat-value" label_class="wa-stat-label" %}
 
@@ -212,7 +212,7 @@
                 </a>
                 <a href="{% url 'manage_website:clients' %}" class="wa-quick-link">
                     <i class="fa-solid fa-handshake"></i>
-                    <span>Client Logos</span>
+                    <span>Clients</span>
                 </a>
                 <a href="/" target="_blank" rel="noopener noreferrer" class="wa-quick-link">
                     <i class="fa-solid fa-up-right-from-square"></i>

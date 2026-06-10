@@ -83,6 +83,7 @@ urlpatterns = [
     # ==========================================================================
     path('api/contacts/', views.api_contact_list, name='api_contact_list'),
     path('api/contacts/<int:pk>/', views.api_contact_get, name='api_contact_get'),
+    path('api/contacts/mark-all-read/', views.api_contact_mark_all_read, name='api_contact_mark_all_read'),
     path('api/contacts/<int:pk>/status/', views.api_contact_update_status, name='api_contact_update_status'),
     path('api/contacts/<int:pk>/delete/', views.api_contact_delete, name='api_contact_delete'),
 ]
