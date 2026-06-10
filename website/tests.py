@@ -342,3 +342,41 @@ class WebsitePwaInstallabilityTests(TestCase):
 		self.assertIn('javascript', response['Content-Type'])
 		self.assertEqual(response['Service-Worker-Allowed'], '/')
 		self.assertIn("self.addEventListener('fetch'", response.content.decode('utf-8'))
+
+
+class WebsiteSingletonServicesTests(TestCase):
+	def setUp(self):
+		cache.clear()
+		from website.models import BusinessDetails, WebsiteStatus
+		BusinessDetails.objects.all().delete()
+		WebsiteStatus.objects.all().delete()
+
+	def test_business_details_update_handles_non_one_pk(self):
+		from website.models import BusinessDetails
+		from website.services import BusinessDetailsService
+		# Create a record with pk=2
+		BusinessDetails.objects.create(id=2, site_name="Existing Site")
+
+		# Update details using the service layer
+		updated = BusinessDetailsService.update({'site_name': 'New Site Name'})
+
+		# Check that it updated the existing record rather than failing or creating another
+		self.assertEqual(BusinessDetails.objects.count(), 1)
+		self.assertEqual(updated.id, 2)
+		self.assertEqual(updated.site_name, 'New Site Name')
+
+	def test_website_status_toggle_handles_non_one_pk(self):
+		from website.models import WebsiteStatus
+		from website.services import WebsiteStatusService
+		# Create a record with pk=2
+		status_obj = WebsiteStatus.objects.create(id=2, status='live')
+
+		# Toggle status using the service layer
+		new_status = WebsiteStatusService.toggle_status()
+
+		# Check that it updated the existing record
+		self.assertEqual(WebsiteStatus.objects.count(), 1)
+		self.assertEqual(new_status, 'draft')
+		status_obj.refresh_from_db()
+		self.assertEqual(status_obj.status, 'draft')
+		self.assertEqual(status_obj.id, 2)

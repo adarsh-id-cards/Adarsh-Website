@@ -243,9 +243,12 @@ class WebsiteStatusService:
     def toggle_status():
         """Toggle website between 'live' and 'draft'. Returns new status."""
         with transaction.atomic():
-            obj, _ = WebsiteStatus.objects.get_or_create(pk=1)
-            obj.status = 'draft' if obj.status == 'live' else 'live'
-            obj.save()
+            obj = WebsiteStatus.objects.first()
+            if not obj:
+                obj = WebsiteStatus.objects.create(status='live')
+            else:
+                obj.status = 'draft' if obj.status == 'live' else 'live'
+                obj.save()
         return obj.status
 
 
@@ -269,7 +272,9 @@ class BusinessDetailsService:
         Returns the updated BusinessDetails instance.
         """
         with transaction.atomic():
-            business, _ = BusinessDetails.objects.get_or_create(pk=1)
+            business = BusinessDetails.objects.first()
+            if not business:
+                business = BusinessDetails()
             for field in cls.EDITABLE_FIELDS:
                 val = data.get(field)
                 if val is not None:
