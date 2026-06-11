@@ -62,9 +62,15 @@ class BusinessDetails(models.Model):
     instagram_url = models.URLField(blank=True, help_text='Instagram profile URL')
     linkedin_url = models.URLField(blank=True, help_text='LinkedIn profile URL')
     youtube_url = models.URLField(blank=True, help_text='YouTube channel URL')
-    
 
-    
+    # App
+    app_link = models.CharField(
+        max_length=255,
+        blank=True,
+        default='com.adarshid.app',
+        help_text='Android app package ID (e.g. com.adarshid.app) or full Play Store URL'
+    )
+
     # Status
     is_active = models.BooleanField(default=True, help_text='Active/Inactive toggle for business details')
 

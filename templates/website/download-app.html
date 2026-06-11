@@ -43,6 +43,28 @@
                 </div>
 
                 <div class="app-download-actions">
+                    {% with app_val=business.app_link|default:"" %}
+                    {% if app_val %}
+                        {% if "http://" in app_val or "https://" in app_val %}
+                            {% with play_url=app_val %}
+                            <a href="{{ play_url }}" class="btn-download-apk" target="_blank" rel="noopener noreferrer">
+                                <i class="fa-brands fa-android"></i>
+                                <div>
+                                    <small>Get it on</small>
+                                    <strong>Google Play</strong>
+                                </div>
+                            </a>
+                            {% endwith %}
+                        {% else %}
+                            <a href="https://play.google.com/store/apps/details?id={{ app_val }}" class="btn-download-apk" target="_blank" rel="noopener noreferrer">
+                                <i class="fa-brands fa-android"></i>
+                                <div>
+                                    <small>Get it on</small>
+                                    <strong>Google Play</strong>
+                                </div>
+                            </a>
+                        {% endif %}
+                    {% else %}
                     <div class="btn-download-apk btn-download-soon">
                         <i class="fa-brands fa-android"></i>
                         <div>
@@ -50,11 +72,17 @@
                             <strong>Android App</strong>
                         </div>
                     </div>
+                    {% endif %}
+                    {% endwith %}
                 </div>
 
                 <div class="app-install-note">
                     <i class="fa-solid fa-info-circle"></i>
+                    {% if business.app_link %}
+                    <p>Download the Adarsh ID Cards app from Google Play for seamless card management on Android.</p>
+                    {% else %}
                     <p>The Android app is being prepared. Check back soon! Contact us for early access.</p>
+                    {% endif %}
                 </div>
             </div>
 

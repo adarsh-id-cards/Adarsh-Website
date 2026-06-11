@@ -262,6 +262,7 @@ class BusinessDetailsService:
     EDITABLE_FIELDS = [
         'site_name', 'address', 'phone1', 'phone2', 'email',
         'facebook_url', 'instagram_url', 'linkedin_url', 'youtube_url',
+        'app_link',
     ]
 
     @classmethod

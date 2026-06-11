@@ -547,6 +547,32 @@
         </div>
 
 
+        <!-- Android App Link -->
+        <div class="wa-form-group-title wa-section-bar">
+            <span class="wa-section-bar-left"><i class="fa-brands fa-android"></i> Android App</span>
+            {% if is_admin or is_pro or perm_website_edit %}
+            <span class="wa-section-bar-actions">
+                <button type="button" class="btn btn-primary btn-sm wa-section-save-btn" data-fields="app_link">
+                    <i class="fa-solid fa-save"></i> Save Changes
+                </button>
+            </span>
+            {% endif %}
+        </div>
+        <div class="wa-form-row">
+            <div class="wa-form-group full">
+                <label for="app_link">
+                    <i class="fa-brands fa-google-play"></i> Play Store Package / URL
+                </label>
+                <input type="text" id="app_link" name="app_link"
+                       value="{{ business.app_link|default:'com.adarshid.app' }}"
+                       placeholder="com.adarshid.app">
+                <small class="wa-field-hint">
+                    Enter the app package ID (e.g. <code>com.adarshid.app</code>) or a full Play Store URL.<br>
+                    <span id="appLinkPreview" style="color:var(--color-primary);word-break:break-all;"></span>
+                </small>
+            </div>
+        </div>
+
         <!-- Active Toggle -->
         <div class="wa-form-group-title wa-section-bar">
             <span class="wa-section-bar-left"><i class="fa-solid fa-power-off"></i> Visibility Preference</span>
@@ -746,6 +772,24 @@
             await submitBusinessFormData(fd, btn);
         });
     });
+
+    // App link live preview
+    const appLinkInput = document.getElementById('app_link');
+    const appLinkPreview = document.getElementById('appLinkPreview');
+    function updateAppLinkPreview() {
+        if (!appLinkInput || !appLinkPreview) return;
+        const val = (appLinkInput.value || '').trim();
+        if (!val) { appLinkPreview.textContent = ''; return; }
+        if (val.startsWith('http://') || val.startsWith('https://')) {
+            appLinkPreview.textContent = '→ ' + val;
+        } else {
+            appLinkPreview.textContent = '→ https://play.google.com/store/apps/details?id=' + val;
+        }
+    }
+    if (appLinkInput) {
+        appLinkInput.addEventListener('input', updateAppLinkPreview);
+        updateAppLinkPreview();
+    }
 
 })();
 
