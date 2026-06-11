@@ -418,6 +418,8 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
 FORCE_SECURE_COOKIES = _env_bool('FORCE_SECURE_COOKIES', False)
 SECURE_COOKIES = (not DEBUG) or FORCE_SECURE_COOKIES
 
+SESSION_COOKIE_NAME = os.getenv('SESSION_COOKIE_NAME', 'adarsh_web_sessionid').strip() or 'adarsh_web_sessionid'
+CSRF_COOKIE_NAME = os.getenv('CSRF_COOKIE_NAME', 'adarsh_web_csrftoken').strip() or 'adarsh_web_csrftoken'
 SESSION_COOKIE_HTTPONLY = True          # JS cannot read session cookie
 SESSION_COOKIE_SAMESITE = 'Lax'        # CSRF mitigation
 SESSION_COOKIE_SECURE = SECURE_COOKIES # Enforce HTTPS when appropriate
