@@ -108,12 +108,12 @@ h6 { font-size: var(--ui-heading-h6-size); }
   width: 32px !important;
   height: 32px !important;
   border-radius: 6px !important;
-  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%) !important;
-  border: 1px solid rgba(229, 62, 62, 0.35) !important;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+  border: 1px solid rgba(29, 78, 216, 0.35) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  box-shadow: 0 2px 6px rgba(229, 62, 62, 0.15), inset 0 1px 0 rgba(255,255,255,0.6) !important;
+  box-shadow: 0 2px 6px rgba(29, 78, 216, 0.15), inset 0 1px 0 rgba(255,255,255,0.6) !important;
   flex-shrink: 0 !important;
   padding: 0 !important;
 }
