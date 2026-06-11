@@ -343,9 +343,17 @@ def portfolio_page(request):
     context = _get_base_context(request, 'portfolio')
     # Cache ensure_defaults to avoid 9 get_or_create queries per page load
     from django.core.cache import cache
-    if not cache.get('portfolio_defaults_ensured'):
+    try:
+        defaults_ensured = cache.get('portfolio_defaults_ensured')
+    except Exception:
+        defaults_ensured = None
+
+    if not defaults_ensured:
         PortfolioCategory.ensure_defaults()
-        cache.set('portfolio_defaults_ensured', True, 3600)
+        try:
+            cache.set('portfolio_defaults_ensured', True, 3600)
+        except Exception:
+            pass
 
     items_qs = PortfolioItem.objects.select_related('category').all().order_by('order', '-created_at')
 
@@ -405,7 +413,10 @@ def api_toggle_website_status(request):
         new_status = WebsiteStatusService.toggle_status()
         # Clear middleware cache so the change takes effect immediately
         from django.core.cache import cache
-        cache.delete('website_status_cache')
+        try:
+            cache.delete('website_status_cache')
+        except Exception as exc:
+            logging.getLogger(__name__).warning('Failed to delete website_status_cache: %s', exc)
         ActivityService.log_website_update(request, f'status changed to {new_status}')
         return JsonResponse({'success': True, 'status': new_status})
     except Exception as e:
@@ -428,7 +439,10 @@ def api_set_website_not_found_mode(request):
         )
 
         from django.core.cache import cache
-        cache.delete('website_not_found_mode_cache')
+        try:
+            cache.delete('website_not_found_mode_cache')
+        except Exception as exc:
+            logging.getLogger(__name__).warning('Failed to delete website_not_found_mode_cache: %s', exc)
 
         if enabled and not previous_enabled:
             send_not_found_mode_enabled_broadcast(request=request, enabled_by=request.user)

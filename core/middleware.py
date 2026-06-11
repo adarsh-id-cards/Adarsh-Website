@@ -876,14 +876,27 @@ class TrafficTrackerMiddleware:
                         request.session.create()
                     session_key = request.session.session_key
                     
-                    # Create VisitorHit record
-                    VisitorHit.objects.create(
-                        ip_address=ip,
-                        session_key=session_key,
-                        path=path,
-                        referer=referer[:500] if referer else None,
-                        channel=channel
-                    )
+                    # Avoid hammering the database: cache hits for 5 minutes per session/IP + path
+                    from django.core.cache import cache
+                    hit_cache_key = f"hit_track:{session_key or ip}:{path}"
+                    try:
+                        already_tracked = cache.get(hit_cache_key)
+                    except Exception:
+                        already_tracked = None
+
+                    if not already_tracked:
+                        # Create VisitorHit record
+                        VisitorHit.objects.create(
+                            ip_address=ip,
+                            session_key=session_key,
+                            path=path,
+                            referer=referer[:500] if referer else None,
+                            channel=channel
+                        )
+                        try:
+                            cache.set(hit_cache_key, True, 300)  # Cache for 5 minutes
+                        except Exception:
+                            pass
                 except Exception as e:
                     # Silently fail-safe: don't crash public site views if tracking fails
                     pass

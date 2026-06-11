@@ -14,7 +14,11 @@ class CacheVersionService:
         Get the current version for a given key and scope.
         """
         cache_key = f'cache_version:{scope}:{key}'
-        return cache.get(cache_key, 1)
+        try:
+            return cache.get(cache_key, 1)
+        except Exception as e:
+            logger.debug(f"Failed to get cache version for {scope}:{key}: {e}")
+            return 1
 
     @staticmethod
     def bump(key: str, scope: str = 'global') -> int:

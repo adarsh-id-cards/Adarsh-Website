@@ -154,13 +154,14 @@ def _parse_bool(value, default=False):
 
 def _invalidate_public_section_caches():
     """Invalidate public website section caches after content mutations."""
-    cache.delete('home_sections')
-    cache.delete('business_details')
-    cache.delete('website:why_choose_us:sections')
     try:
+        cache.delete('home_sections')
+        cache.delete('business_details')
+        cache.delete('website:why_choose_us:sections')
         CacheVersionService.bump('website_public_sections', 'public')
     except Exception as exc:
-        logger.debug('Website public cache version bump failed: %s', exc)
+        logger.warning('Failed to invalidate public section caches: %s', exc)
+
 
 
 def _detect_orientation(image_file):

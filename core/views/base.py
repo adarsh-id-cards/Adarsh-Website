@@ -49,20 +49,30 @@ def dashboard(request):
     from website.models import VisitorHit
     from django.utils import timezone
     from datetime import timedelta
-    from django.db.models import Count
+    from django.db.models import Count, Q
+    from django.db.models.functions import TruncDate, TruncMonth
     
     now_dt = timezone.now()
     
-    # 7 Days dataset (Daily views)
+    # 7 Days dataset (Daily views) - optimized to 1 single grouped query
+    start_daily = (now_dt - timedelta(days=6)).date()
+    daily_stats = (
+        VisitorHit.objects.filter(created_at__date__gte=start_daily)
+        .annotate(date=TruncDate('created_at'))
+        .values('date')
+        .annotate(views=Count('id'), unique=Count('session_key', distinct=True))
+    )
+    daily_stats_map = {item['date']: item for item in daily_stats}
+
     daily_views = []
     daily_unique = []
     
     # Get actual hits for the last 7 calendar days
     for i in range(6, -1, -1):
         target_date = (now_dt - timedelta(days=i)).date()
-        hits_on_day = VisitorHit.objects.filter(created_at__date=target_date)
-        views = hits_on_day.count()
-        unique = hits_on_day.values('session_key').distinct().count()
+        stats = daily_stats_map.get(target_date)
+        views = stats['views'] if stats else 0
+        unique = stats['unique'] if stats else 0
         
         # Graceful bootstrap: add simulated baseline if database views are empty
         if VisitorHit.objects.count() < 10:
@@ -85,7 +95,7 @@ def dashboard(request):
     # Get actual calendar day names (e.g. Wed, Thu, etc.)
     days_labels = [(now_dt - timedelta(days=i)).strftime('%a') for i in range(6, -1, -1)]
 
-    # 30 Days dataset (4 weeks)
+    # 30 Days dataset (4 weeks) - loop remains since it is only 4 iterations
     weeks = ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4']
     weekly_views = []
     weekly_unique = []
@@ -112,17 +122,25 @@ def dashboard(request):
         weekly_views.append(views)
         weekly_unique.append(unique)
         
-    # 12 Months dataset (last 12 calendar months)
+    # 12 Months dataset (last 12 calendar months) - optimized to 1 single grouped query
     monthly_views = []
     monthly_unique = []
     months_labels = []
+    
+    start_monthly = (now_dt - timedelta(days=365)).date()
+    monthly_stats = (
+        VisitorHit.objects.filter(created_at__date__gte=start_monthly)
+        .annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(views=Count('id'), unique=Count('session_key', distinct=True))
+    )
+    monthly_stats_map = {(item['month'].year, item['month'].month): item for item in monthly_stats}
+
     for i in range(11, -1, -1):
-        start_date = (now_dt - timedelta(days=(i+1)*30)).date()
-        end_date = (now_dt - timedelta(days=i*30)).date()
-        hits_in_month = VisitorHit.objects.filter(created_at__date__gte=start_date, created_at__date__lte=end_date)
-        
-        views = hits_in_month.count()
-        unique = hits_in_month.values('session_key').distinct().count()
+        target_date = (now_dt - timedelta(days=i*30)).date()
+        stats = monthly_stats_map.get((target_date.year, target_date.month))
+        views = stats['views'] if stats else 0
+        unique = stats['unique'] if stats else 0
         
         month_name = (now_dt - timedelta(days=i*30)).strftime('%b')
         months_labels.append(month_name)
@@ -179,11 +197,26 @@ def dashboard(request):
         conversion = round(3.4 + (portfolio_factor * 0.02) + (reviews_factor * 0.01), 2)
     context['kpi_conversion_rate'] = f"{min(8.5, max(1.2, conversion))}%"
 
-    # Category performance: views & inquiries per product category
+    # Category performance: views & inquiries per product category - optimized
     category_reach = []
-    for idx, cat in enumerate(PortfolioCategory.objects.filter(is_active=True)[:6]):
-        item_count = cat.items.filter(is_active=True).count()
-        actual_cat_hits = VisitorHit.objects.filter(path__icontains=cat.slug).count()
+    categories_list = list(
+        PortfolioCategory.objects.filter(is_active=True)[:6]
+        .annotate(active_item_count=Count('items', filter=Q(items__is_active=True)))
+    )
+    
+    # Pre-aggregate category hits in one query using conditional aggregation
+    path_filters = {}
+    for cat in categories_list:
+        path_filters[f'cat_{cat.id}'] = Count('id', filter=Q(path__icontains=cat.slug))
+        
+    if path_filters:
+        cat_hit_counts = VisitorHit.objects.aggregate(**path_filters)
+    else:
+        cat_hit_counts = {}
+
+    for idx, cat in enumerate(categories_list):
+        item_count = cat.active_item_count
+        actual_cat_hits = cat_hit_counts.get(f'cat_{cat.id}', 0)
         
         est_views = actual_cat_hits
         if VisitorHit.objects.count() < 10 or est_views < 5:

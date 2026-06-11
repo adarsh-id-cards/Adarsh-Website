@@ -82,10 +82,18 @@ def get_common_context():
     Caches BusinessDetails for 5 minutes to avoid querying on every page load.
     """
     business_cache_key = _website_public_cache_key('business_details')
-    business = cache.get(business_cache_key)
+    try:
+        business = cache.get(business_cache_key)
+    except Exception as exc:
+        logger.warning('Failed to get business details from cache: %s', exc)
+        business = None
+
     if business is None:
         business = BusinessDetails.objects.first()
-        cache.set(business_cache_key, business, BUSINESS_CACHE_TTL)
+        try:
+            cache.set(business_cache_key, business, BUSINESS_CACHE_TTL)
+        except Exception as exc:
+            logger.warning('Failed to set business details in cache: %s', exc)
 
     return {
         'business': business,
@@ -311,14 +319,27 @@ self.addEventListener('fetch', function() {
 def _get_bento_context():
     """Helper to get bento categories and their rotating media."""
     cache_key = _website_public_cache_key('bento_context')
-    cached = cache.get(cache_key)
+    try:
+        cached = cache.get(cache_key)
+    except Exception as exc:
+        logger.warning('Failed to get bento context from cache: %s', exc)
+        cached = None
+
     if cached is not None:
         return cached
 
     # Ensure default categories exist
-    if not cache.get('portfolio_defaults_ensured'):
+    try:
+        defaults_ensured = cache.get('portfolio_defaults_ensured')
+    except Exception:
+        defaults_ensured = None
+
+    if not defaults_ensured:
         PortfolioCategory.ensure_defaults()
-        cache.set('portfolio_defaults_ensured', True, 3600)
+        try:
+            cache.set('portfolio_defaults_ensured', True, 3600)
+        except Exception:
+            pass
 
     categories = list(PortfolioCategory.objects.filter(is_active=True).order_by('order'))
 
@@ -394,7 +415,10 @@ def _get_bento_context():
         'category_item_totals': category_item_totals,
         'category_modal_batch_size': CATEGORY_MODAL_INITIAL_LIMIT,
     }
-    cache.set(cache_key, result, BUSINESS_CACHE_TTL)
+    try:
+        cache.set(cache_key, result, BUSINESS_CACHE_TTL)
+    except Exception as exc:
+        logger.warning('Failed to set bento context in cache: %s', exc)
     return result
 
 
@@ -407,7 +431,12 @@ def home(request):
     
     # Section data
     home_sections_cache_key = _website_public_cache_key('home_sections')
-    home_sections = cache.get(home_sections_cache_key)
+    try:
+        home_sections = cache.get(home_sections_cache_key)
+    except Exception as exc:
+        logger.warning('Failed to get home sections from cache: %s', exc)
+        home_sections = None
+
     if home_sections is None:
         image_products_filter = Q(item_type='image') & Q(image__isnull=False) & ~Q(image='')
         trusted_clients = [
@@ -424,7 +453,10 @@ def home(request):
             ),
             'testimonials': list(Testimonial.objects.filter(is_active=True).order_by('-review_date', '-created_at')[:HOME_TESTIMONIALS_LIMIT]),
         }
-        cache.set(home_sections_cache_key, home_sections, BUSINESS_CACHE_TTL)
+        try:
+            cache.set(home_sections_cache_key, home_sections, BUSINESS_CACHE_TTL)
+        except Exception as exc:
+            logger.warning('Failed to set home sections in cache: %s', exc)
     context.update(home_sections)
 
     # ... (row logic)
@@ -539,7 +571,12 @@ def why_choose_us(request):
     """About/Features Page"""
     context = get_common_context()
     why_cache_key = _website_public_cache_key('why_choose_us_sections')
-    why_sections = cache.get(why_cache_key)
+    try:
+        why_sections = cache.get(why_cache_key)
+    except Exception as exc:
+        logger.warning('Failed to get why choose us sections from cache: %s', exc)
+        why_sections = None
+
     if why_sections is None:
         why_sections = {
             'features': list(
@@ -548,7 +585,10 @@ def why_choose_us(request):
                 .order_by('order')
             ),
         }
-        cache.set(why_cache_key, why_sections, WHY_CHOOSE_US_CACHE_TTL)
+        try:
+            cache.set(why_cache_key, why_sections, WHY_CHOOSE_US_CACHE_TTL)
+        except Exception as exc:
+            logger.warning('Failed to set why choose us sections in cache: %s', exc)
     context.update(why_sections)
     context.update({
         'meta_title': f"Why Choose Adarsh ID Cards | Leading Service in Bhopal, MP",
@@ -564,7 +604,11 @@ def trusted_clients_page(request):
     context = get_common_context()
     
     clients_cache_key = _website_public_cache_key('trusted_clients_page')
-    clients_data = cache.get(clients_cache_key)
+    try:
+        clients_data = cache.get(clients_cache_key)
+    except Exception as exc:
+        logger.warning('Failed to get trusted clients page from cache: %s', exc)
+        clients_data = None
     
     if clients_data is None:
         now = timezone.now()
@@ -609,7 +653,10 @@ def trusted_clients_page(request):
                 'years': years,
             })
         
-        cache.set(clients_cache_key, clients_data, 300)  # Cache for 5 minutes
+        try:
+            cache.set(clients_cache_key, clients_data, 300)  # Cache for 5 minutes
+        except Exception as exc:
+            logger.warning('Failed to set trusted clients page in cache: %s', exc)
     
     context.update({
         'clients': clients_data,
