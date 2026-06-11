@@ -58,6 +58,12 @@ class ActivityService:
         cls.log('logout', f'{user.username} logged out', user=user, request=request)
 
     @classmethod
+    def log_website_update(cls, request, description):
+        """Log a website content update action from the manage_website dashboard."""
+        user = getattr(request, 'user', None)
+        cls.log('website_update', description, user=user, request=request, target_model='website')
+
+    @classmethod
     def get_recent(cls, limit=8, hours=None, user=None):
         qs = ActivityLog.objects.select_related('user').order_by('-created_at')
         if hours:
