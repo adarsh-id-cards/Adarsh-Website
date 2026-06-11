@@ -18,7 +18,7 @@
                     <span>Your Privacy Matters</span>
                 </div>
                 <h1>Privacy <span class="gradient-text">Policy</span></h1>
-                <p class="hero-subtitle">Last updated: April 29, 2026</p>
+                <p class="hero-subtitle">Last updated: June 11, 2026</p>
             </div>
         </div>
     </section>
@@ -34,6 +34,7 @@
                         <li><a href="#introduction">Introduction</a></li>
                         <li><a href="#information-collected">Information We Collect</a></li>
                         <li><a href="#mobile-app">Mobile Application Data</a></li>
+                        <li><a href="#android-permissions">Android App Permissions</a></li>
                         <li><a href="#how-we-use">How We Use Your Information</a></li>
                         <li><a href="#data-sharing">Data Sharing & Disclosure</a></li>
                         <li><a href="#data-security">Data Security</a></li>
@@ -93,16 +94,52 @@
                             <i class="fa-solid fa-mobile-screen-button"></i>
                         </div>
                         <h2>Mobile Application Data</h2>
-                        <p>When you use the Adarsh Mobile Application, we may collect or request access to specific information to provide app functionality:</p>
-                        
+                        <p>When you use the Adarsh Mobile Application, we may collect or process the following information to provide core app functionality:</p>
+
                         <ul class="policy-list">
-                            <li><i class="fa-solid fa-camera"></i> <strong>Camera & Media Gallery:</strong> We request permission to access your camera and photo library specifically for capturing or uploading student and staff photos for ID card processing.</li>
-                            <li><i class="fa-solid fa-folder-open"></i> <strong>Device Storage:</strong> We may access device storage to save temporary files or cached data for offline use.</li>
-                            <li><i class="fa-solid fa-fingerprint"></i> <strong>Device Identifiers:</strong> We collect unique device identifiers and network information for security authentication and to prevent unauthorized access.</li>
+                            <li><i class="fa-solid fa-fingerprint"></i> <strong>Account Credentials:</strong> Login credentials (username and password) used to authenticate and secure your session within the app.</li>
+                            <li><i class="fa-solid fa-id-card"></i> <strong>Card &amp; Order Data:</strong> ID card assignments, order details, class/section information, and correction or reprint requests submitted through the app.</li>
+                            <li><i class="fa-solid fa-file-excel"></i> <strong>Uploaded Data Files:</strong> Data files such as Excel (.xlsx) or ZIP archives uploaded through the app for batch processing of student records.</li>
+                            <li><i class="fa-solid fa-bell"></i> <strong>Push Notification Token:</strong> A device notification token used solely to send order status updates and alerts to your device.</li>
+                            <li><i class="fa-solid fa-clock"></i> <strong>Usage &amp; Session Data:</strong> Basic session metadata (login time, device type, app version) used to improve stability and performance.</li>
                         </ul>
                         <div class="highlight-box">
                             <i class="fa-solid fa-user-shield"></i>
-                            <p>Mobile app permissions are only requested when necessary. You can manage or revoke these permissions at any time through your device settings.</p>
+                            <p>The app does <strong>not</strong> request persistent access to your photo library or media storage. When a photo upload is needed (e.g., a student image), the app uses the <strong>Android Photo Picker</strong> — a system-level tool that lets you select a single image without granting the app any ongoing access to your gallery.</p>
+                        </div>
+                    </article>
+
+                    <!-- Android App Permissions -->
+                    <article class="policy-article" id="android-permissions">
+                        <div class="article-icon">
+                            <i class="fa-brands fa-android"></i>
+                        </div>
+                        <h2>Android App Permissions</h2>
+                        <p>Transparency about permissions is important to us. Below is a full list of Android permissions the Adarsh app may request and why:</p>
+
+                        <ul class="policy-list">
+                            <li>
+                                <i class="fa-solid fa-check"></i>
+                                <strong>INTERNET</strong> — Required to communicate with our servers to sync orders, card data, and account information.
+                            </li>
+                            <li>
+                                <i class="fa-solid fa-check"></i>
+                                <strong>CAMERA (optional)</strong> — Used only when you choose to capture a photo directly within the app (e.g., taking a student photo for an ID card). This is optional and can be declined; you may use the Photo Picker instead.
+                            </li>
+                            <li>
+                                <i class="fa-solid fa-check"></i>
+                                <strong>POST_NOTIFICATIONS</strong> — Allows the app to send you push notifications for order status updates. You can disable this in your device settings at any time.
+                            </li>
+                        </ul>
+
+                        <div class="highlight-box">
+                            <i class="fa-solid fa-image"></i>
+                            <p><strong>No broad media storage permissions (READ_MEDIA_IMAGES / READ_MEDIA_VIDEO) are used.</strong> When you need to upload a photo, the app opens the <strong>Android Photo Picker</strong> — a privacy-safe system tool that lets you select a specific file without giving the app access to your entire photo library. The selected file is processed immediately and not stored on the app's behalf.</p>
+                        </div>
+
+                        <div class="warning-box" style="margin-top:1rem;">
+                            <i class="fa-solid fa-info-circle"></i>
+                            <p>You can review and change app permissions at any time by going to <strong>Settings → Apps → Adarsh ID Cards → Permissions</strong> on your Android device.</p>
                         </div>
                     </article>
 
