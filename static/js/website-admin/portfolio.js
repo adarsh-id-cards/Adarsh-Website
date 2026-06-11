@@ -441,7 +441,8 @@
 
         // Phase 2: Upload done  server processing (80%  95%)
         xhr.upload.onloadend = function () {
-            // CRITICAL: Reset stall timer so it doesn't fire during server processing
+            // CRITICAL: Clear stall timer so it doesn't fire during server processing
+            clearInterval(_pfStallTimer);
             _pfLastProgress = Date.now();
             progressBar.style.width = '80%';
             progressText.textContent = 'Processing ' + files.length + ' ' + mediaLabel + '(s) on server...';

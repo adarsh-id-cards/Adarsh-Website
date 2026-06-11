@@ -4,6 +4,26 @@
   --sidebar-width: 180px !important;
   --ui-font-family-sans: var(--font-sans, var(--font-family, "Saira Semi Condensed", "Segoe UI", "Helvetica Neue", Arial, sans-serif));
 
+  /* Global Stacking/Z-Index System */
+  --zi-deep: -100;
+  --zi-neg: -1;
+  --zi-zero: 0;
+  --zi-base: 1;
+  --zi-above: 10;
+  --zi-decoration: 20;
+  --zi-sticky: 100;
+  --zi-navbar: 1000;
+  --zi-topbar: 1100;
+  --zi-tooltip: 2000;
+  --zi-dropdown: 5000;
+  --zi-mobile-overlay: 9000;
+  --zi-mobile-menu: 10000;
+  --zi-mobile-close: 10100;
+  --zi-toast: 15000;
+  --zi-modal-overlay: 20000;
+  --zi-modal-content: 20100;
+  --zi-max: 99999;
+
   /* Core UI type scale (small-to-large). */
   --ui-font-size-5xs: 6px;
   --ui-font-size-4xs: 7px;
