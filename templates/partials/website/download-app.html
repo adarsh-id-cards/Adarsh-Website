@@ -56,14 +56,37 @@
                 </ul>
                 
                 <div class="download-badges">
-                    <a href="#" class="app-badge">
-                        <i class="fa-brands fa-google-play"></i>
-                        <div class="badge-text">
-                            <span class="small">GET IT ON</span>
-                            <span class="big">Google Play</span>
-                        </div>
-                    </a>
-                    <a href="#" class="app-badge direct-download">
+                    {% with app_val=business.app_link|default:"" %}
+                    {% if app_val %}
+                        {% if "http://" in app_val or "https://" in app_val %}
+                            <a href="{{ app_val }}" class="app-badge" target="_blank" rel="noopener noreferrer">
+                                <i class="fa-brands fa-google-play"></i>
+                                <div class="badge-text">
+                                    <span class="small">GET IT ON</span>
+                                    <span class="big">Google Play</span>
+                                </div>
+                            </a>
+                        {% else %}
+                            <a href="https://play.google.com/store/apps/details?id={{ app_val }}" class="app-badge" target="_blank" rel="noopener noreferrer">
+                                <i class="fa-brands fa-google-play"></i>
+                                <div class="badge-text">
+                                    <span class="small">GET IT ON</span>
+                                    <span class="big">Google Play</span>
+                                </div>
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'website:download_app' %}" class="app-badge">
+                            <i class="fa-brands fa-google-play"></i>
+                            <div class="badge-text">
+                                <span class="small">GET IT ON</span>
+                                <span class="big">Google Play</span>
+                            </div>
+                        </a>
+                    {% endif %}
+                    {% endwith %}
+                    
+                    <a href="{% static 'website/apk/adarsh-admin.apk' %}" class="app-badge direct-download" download>
                         <i class="fa-solid fa-download"></i>
                         <div class="badge-text">
                             <span class="small">Download Now</span>

@@ -67,7 +67,7 @@ class BusinessDetails(models.Model):
     app_link = models.CharField(
         max_length=255,
         blank=True,
-        default='com.adarshid.app',
+        default='https://play.google.com/store/apps/details?id=com.adarshid.app&pcampaignid=web_share',
         help_text='Android app package ID (e.g. com.adarshid.app) or full Play Store URL'
     )
 

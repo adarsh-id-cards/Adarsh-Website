@@ -17,7 +17,17 @@
             <p class="hero-subtitle">Empowering institutions with high-precision identity solutions. Crafting stunning, secure, and highly durable custom ID cards designed to represent your organization with excellence.</p>
             <div class="hero-buttons">
                 <a href="#contact" class="btn btn-primary"><i class="fa-solid fa-envelope" aria-hidden="true"></i> Enquire Now</a>
-                <a href="#" class="btn btn-app-download"><i class="fa-brands fa-google-play" aria-hidden="true"></i> Google Play</a>
+                {% with app_val=business.app_link|default:"" %}
+                {% if app_val %}
+                    {% if "http://" in app_val or "https://" in app_val %}
+                        <a href="{{ app_val }}" class="btn btn-app-download" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-google-play" aria-hidden="true"></i> Google Play</a>
+                    {% else %}
+                        <a href="https://play.google.com/store/apps/details?id={{ app_val }}" class="btn btn-app-download" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-google-play" aria-hidden="true"></i> Google Play</a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'website:download_app' %}" class="btn btn-app-download"><i class="fa-brands fa-google-play" aria-hidden="true"></i> Google Play</a>
+                {% endif %}
+                {% endwith %}
             </div>
         </div>
     </div>
