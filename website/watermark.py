@@ -312,6 +312,55 @@ def process_portfolio_image(file_obj, max_kb: int = 200) -> ContentFile:
         return file_obj
 
 
+def compress_image_to_webp(file_obj, max_kb: int = 50, max_width: int = 400) -> ContentFile:
+    """
+    Compresses an image to WebP format, limits width to max_width (maintaining aspect ratio),
+    and reduces quality until file size is <= max_kb.
+    """
+    if not file_obj:
+        return file_obj
+
+    if getattr(file_obj, '_image_processed', False):
+        return file_obj
+
+    try:
+        file_obj.seek(0)
+        img = Image.open(file_obj)
+        img = ImageOps.exif_transpose(img)
+        img = img.convert('RGBA' if 'A' in img.getbands() else 'RGB')
+
+        w, h = img.size
+        if max_width and w > max_width:
+            ratio = max_width / w
+            img = img.resize((max_width, int(h * ratio)), Image.LANCZOS)
+
+        orig_name = getattr(file_obj, 'name', 'image.png')
+        base_name = orig_name.rsplit('.', 1)[0] if '.' in orig_name else orig_name
+        webp_name = base_name + '.webp'
+        max_bytes = max_kb * 1024
+
+        for quality in range(85, 15, -10):
+            buf = io.BytesIO()
+            img.save(buf, format='WEBP', quality=quality, method=2)
+            if buf.tell() <= max_bytes:
+                buf.seek(0)
+                processed = ContentFile(buf.read(), name=webp_name)
+                setattr(processed, '_image_processed', True)
+                return processed
+
+        buf.seek(0)
+        processed = ContentFile(buf.read(), name=webp_name)
+        setattr(processed, '_image_processed', True)
+        return processed
+    except Exception as exc:
+        logger.warning("compress_image_to_webp failed: %s", exc, exc_info=True)
+        try:
+            file_obj.seek(0)
+        except Exception:
+            pass
+        return file_obj
+
+
 # ── Video compression pipeline ───────────────────────────────────────────────
 
 def compress_video_file(file_obj, max_bytes: int = 10 * 1024 * 1024):

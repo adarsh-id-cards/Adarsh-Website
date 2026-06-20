@@ -1407,6 +1407,18 @@ function initCategoryBackgrounds() {
         const categoryCards = Array.from(document.querySelectorAll('.category-card'));
         if (!categoryCards.length) return;
 
+        const isMobile = window.innerWidth < 768;
+        if (isMobile) {
+            categoryCards.forEach((card) => {
+                const hasCover = card.querySelector('.category-cover-img');
+                const placeholder = card.querySelector('.bg-placeholder');
+                if (hasCover && placeholder) {
+                    placeholder.style.display = 'none';
+                }
+            });
+            return;
+        }
+
         function setupCardSlider(card, cardStates) {
             if (!card || card.dataset.sliderInitialized === '1') return;
             const catId = card.dataset.category;

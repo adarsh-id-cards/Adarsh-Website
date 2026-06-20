@@ -22,7 +22,7 @@
                     <div class="logo-item">
                         <div class="logo-visual">
                             <a href="{% url 'website:trusted_clients' %}?open_client={{ client.pk }}" class="trusted-logo-link" data-client-id="{{ client.pk }}">
-                                <img src="{{ client.website_logo.url }}" alt="{{ client.name }}" loading="lazy" decoding="async">
+                                <img src="{{ client.website_logo.url }}" alt="{{ client.name }}" width="110" height="55" loading="lazy" decoding="async">
                             </a>
                         </div>
                         <span class="school-name" title="{{ client.name }}">{{ client.name }}</span>
@@ -33,7 +33,7 @@
                     <div class="logo-item" aria-hidden="true">
                         <div class="logo-visual">
                             <a href="{% url 'website:trusted_clients' %}?open_client={{ client.pk }}" class="trusted-logo-link" data-client-id="{{ client.pk }}" aria-hidden="true">
-                                <img src="{{ client.website_logo.url }}" alt="" loading="lazy" decoding="async">
+                                <img src="{{ client.website_logo.url }}" alt="" width="110" height="55" loading="lazy" decoding="async">
                             </a>
                         </div>
                         <span class="school-name">{{ client.name }}</span>
@@ -49,7 +49,7 @@
                     <div class="logo-item">
                         <div class="logo-visual">
                             <a href="{% url 'website:trusted_clients' %}?open_client={{ client.pk }}" class="trusted-logo-link" data-client-id="{{ client.pk }}">
-                                <img src="{{ client.website_logo.url }}" alt="{{ client.name }}" loading="lazy" decoding="async">
+                                <img src="{{ client.website_logo.url }}" alt="{{ client.name }}" width="110" height="55" loading="lazy" decoding="async">
                             </a>
                         </div>
                         <span class="school-name" title="{{ client.name }}">{{ client.name }}</span>
@@ -60,7 +60,7 @@
                     <div class="logo-item" aria-hidden="true">
                         <div class="logo-visual">
                             <a href="{% url 'website:trusted_clients' %}?open_client={{ client.pk }}" class="trusted-logo-link" data-client-id="{{ client.pk }}" aria-hidden="true">
-                                <img src="{{ client.website_logo.url }}" alt="" loading="lazy" decoding="async">
+                                <img src="{{ client.website_logo.url }}" alt="" width="110" height="55" loading="lazy" decoding="async">
                             </a>
                         </div>
                         <span class="school-name">{{ client.name }}</span>

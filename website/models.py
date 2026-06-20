@@ -519,6 +519,41 @@ class Testimonial(models.Model):
     def __str__(self):
         return self.reviewer_name
 
+    def save(self, *args, **kwargs):
+        if self.reviewer_avatar:
+            is_new = False
+            if not self.pk:
+                is_new = True
+            else:
+                try:
+                    old_obj = Testimonial.objects.get(pk=self.pk)
+                    if old_obj.reviewer_avatar != self.reviewer_avatar:
+                        is_new = True
+                except Testimonial.DoesNotExist:
+                    is_new = True
+
+            if is_new and not getattr(self.reviewer_avatar, '_image_processed', False):
+                from .watermark import compress_image_to_webp
+                self.reviewer_avatar = compress_image_to_webp(self.reviewer_avatar, max_kb=20, max_width=120)
+
+        if self.attachment_image:
+            is_new = False
+            if not self.pk:
+                is_new = True
+            else:
+                try:
+                    old_obj = Testimonial.objects.get(pk=self.pk)
+                    if old_obj.attachment_image != self.attachment_image:
+                        is_new = True
+                except Testimonial.DoesNotExist:
+                    is_new = True
+
+            if is_new and not getattr(self.attachment_image, '_image_processed', False):
+                from .watermark import compress_image_to_webp
+                self.attachment_image = compress_image_to_webp(self.attachment_image, max_kb=150, max_width=800)
+
+        super().save(*args, **kwargs)
+
 
 class FAQ(models.Model):
     """Frequently Asked Questions"""
@@ -626,6 +661,25 @@ class WebsiteClientLogo(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if self.logo:
+            is_new = False
+            if not self.pk:
+                is_new = True
+            else:
+                try:
+                    old_obj = WebsiteClientLogo.objects.get(pk=self.pk)
+                    if old_obj.logo != self.logo:
+                        is_new = True
+                except WebsiteClientLogo.DoesNotExist:
+                    is_new = True
+
+            if is_new and not getattr(self.logo, '_image_processed', False):
+                from .watermark import compress_image_to_webp
+                self.logo = compress_image_to_webp(self.logo, max_kb=40, max_width=300)
+
+        super().save(*args, **kwargs)
 
 
 # ==========================================

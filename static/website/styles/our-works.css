@@ -517,8 +517,13 @@ body.modal-open {
     height: 280px;
     cursor: pointer;
     transition: all 0.4s ease;
-    border: 1px solid rgba(10, 146, 221, 0.2);
+    border: 1.5px solid #cbd5e1 !important;
     box-shadow: 0 10px 26px rgba(16, 15, 87, 0.12);
+}
+
+.category-card:hover {
+    border-color: var(--wa-brand-500, #0a92dd) !important;
+    box-shadow: 0 14px 32px rgba(16, 15, 87, 0.18);
 }
 
 .category-card.large {

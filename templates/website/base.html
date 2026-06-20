@@ -35,7 +35,8 @@
     
     <!-- Fonts & Icons -->
     <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
-    <link rel="stylesheet" href="{% static 'css/vendor/fontawesome/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/vendor/fontawesome/all.min.css' %}" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="{% static 'css/vendor/fontawesome/all.min.css' %}"></noscript>
 
     <!-- Critical above-the-fold hero CSS -->
     <style>
