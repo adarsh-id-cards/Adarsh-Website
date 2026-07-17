@@ -319,18 +319,11 @@ class WebsiteClientLogoService:
             return
 
         from django.conf import settings
-        import hashlib
         url = f"{settings.PANEL_API_URL.rstrip('/')}/api/web/clients/"
         headers = {
             'X-API-KEY': settings.WEB_APP_API_KEY,
             'Accept': 'application/json',
         }
-        
-        # Log diagnostics to resolve mismatch
-        raw_key = settings.WEB_APP_API_KEY or ''
-        masked_key = (raw_key[:3] + "..." + raw_key[-3:]) if len(raw_key) > 6 else "***"
-        key_hash = hashlib.sha256(raw_key.encode('utf-8')).hexdigest()
-        logger.warning("[SYNC DIAGNOSTIC] Sending request to %s with Key: %s (length: %s, hash: %s)", url, masked_key, len(raw_key), key_hash)
         
         try:
             response = requests.get(url, headers=headers, timeout=5)
