@@ -147,6 +147,7 @@ INSTALLED_APPS = [
     'accounts',
     'website',
     'manage_website',
+    'api_sharing',
     'django.contrib.sitemaps',
     'django.contrib.sites',
 ]
@@ -1015,3 +1016,9 @@ LOGGING = {
         },
     },
 }
+
+# =============================================================================
+# PORTAL / PANEL CLIENT API SETTINGS
+# =============================================================================
+PANEL_API_URL = os.getenv('PANEL_API_URL', 'http://localhost:8000')
+WEB_APP_API_KEY = os.getenv('WEB_APP_API_KEY', 'adarsh_secure_fallback_key_2026_web_app')

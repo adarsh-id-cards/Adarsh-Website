@@ -441,7 +441,7 @@ def home(request):
         image_products_filter = Q(item_type='image') & Q(image__isnull=False) & ~Q(image='')
         trusted_clients = [
             client for client in WebsiteClientLogoService.list_all()
-            if getattr(client, 'website_logo', None)
+            if getattr(client, 'website_is_visible', False) and getattr(client, 'website_logo', None)
         ]
         home_sections = {
             'trusted_clients': trusted_clients,
@@ -592,7 +592,7 @@ def why_choose_us(request):
     context.update(why_sections)
     context.update({
         'meta_title': f"Why Choose Adarsh ID Cards | Leading Service in Bhopal, MP",
-        'meta_description': "Adarsh ID Cards Bhopal offers the best quality lanyards and ID card solutions in Madhya Pradesh. 20+ years of trust in professional printing.",
+        'meta_description': "Adarsh ID Cards Bhopal offers the best quality lanyards and ID card solutions in Madhya Pradesh. Celebrating 25 years of trust in professional printing.",
         'canonical_url': request.build_absolute_uri(),
     })
     return render(request, 'website/why-choose-us.html', context)

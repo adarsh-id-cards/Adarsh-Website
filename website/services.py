@@ -309,8 +309,93 @@ class WebsiteClientLogoService:
     """Manage website logos stored locally in WebsiteClientLogo model."""
 
     @staticmethod
+    def sync_from_panel():
+        """
+        Fetch clients from Panel API and synchronize the local database.
+        Caches sync state to avoid hammering the API.
+        """
+        cache_key = 'panel_clients_sync_done'
+        if cache.get(cache_key):
+            return
+
+        from django.conf import settings
+        url = f"{settings.PANEL_API_URL.rstrip('/')}/api/web/clients/"
+        headers = {
+            'X-API-KEY': settings.WEB_APP_API_KEY,
+            'Accept': 'application/json',
+        }
+        
+        try:
+            response = requests.get(url, headers=headers, timeout=5)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('success'):
+                    clients = data.get('clients', [])
+                    
+                    panel_emails = set()
+                    mutated = False
+                    with transaction.atomic():
+                        for c_data in clients:
+                            email = c_data.get('email')
+                            name = c_data.get('name')
+                            total_records = int(c_data.get('total_records', 0) or 0)
+                            if not email:
+                                continue
+                            panel_emails.add(email)
+                            
+                            client_logo, created = WebsiteClientLogo.objects.get_or_create(
+                                email=email,
+                                defaults={
+                                    'name': name,
+                                    'total_records': total_records,
+                                    'website_is_visible': False,
+                                    'website_display_order': 0,
+                                }
+                            )
+                            if created:
+                                mutated = True
+                            else:
+                                fields_to_update = []
+                                if client_logo.name != name:
+                                    client_logo.name = name
+                                    fields_to_update.append('name')
+                                if client_logo.total_records != total_records:
+                                    client_logo.total_records = total_records
+                                    fields_to_update.append('total_records')
+                                if fields_to_update:
+                                    client_logo.save(update_fields=fields_to_update)
+                                    mutated = True
+                        
+                        # Delete local records that are no longer in the panel client list
+                        if panel_emails:
+                            to_delete = WebsiteClientLogo.objects.exclude(email__in=panel_emails)
+                            if to_delete.exists():
+                                mutated = True
+                                for cl in to_delete:
+                                    if cl.logo:
+                                        try:
+                                            cl.logo.delete(save=False)
+                                        except Exception:
+                                            pass
+                                to_delete.delete()
+                    
+                    if mutated:
+                        _invalidate_public_section_caches()
+                    
+                    # Cache the successful sync status for 2 minutes
+                    cache.set(cache_key, True, 120)
+            else:
+                logger.error("Panel API returned status %s: %s", response.status_code, response.text)
+        except Exception as exc:
+            logger.error("Failed to sync client logos from panel: %s", exc)
+
+    @staticmethod
     def list_all():
         """Return all client logos ordered by display order."""
+        try:
+            WebsiteClientLogoService.sync_from_panel()
+        except Exception as exc:
+            logger.error("Failed to sync from panel in list_all: %s", exc)
         return WebsiteClientLogo.objects.all().order_by('website_display_order', '-created_at')
 
     @staticmethod

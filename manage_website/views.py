@@ -520,32 +520,11 @@ def api_client_list(request):
 @require_POST
 @website_clients_manage_required
 def api_client_create(request):
-    """Create a new website client logo."""
-    try:
-        name = request.POST.get('name', '').strip()
-        if not name:
-            return JsonResponse({'success': False, 'message': 'Name is required.'}, status=400)
-        
-        logo = request.FILES.get('logo')
-        if not logo:
-            return JsonResponse({'success': False, 'message': 'Logo image is required.'}, status=400)
-        
-        website_is_visible = _parse_bool(request.POST.get('website_is_visible', 'true'), True)
-        website_display_order = request.POST.get('website_display_order', 0)
-
-        client = WebsiteClientLogoService.create(
-            name=name,
-            logo=logo,
-            website_is_visible=website_is_visible,
-            website_display_order=website_display_order
-        )
-        ActivityService.log_website_update(request, f'client logo created: {name}')
-        return JsonResponse({'success': True, 'message': 'Client logo created', 'id': client.id})
-    except ValidationError as e:
-        return JsonResponse({'success': False, 'message': e.message}, status=400)
-    except Exception as e:
-        logging.getLogger(__name__).exception("Client create error: %s", e)
-        return JsonResponse({'success': False, 'message': 'An error occurred. Please try again.'}, status=500)
+    """Create a new website client logo (disabled - synced from Panel)."""
+    return JsonResponse({
+        'success': False,
+        'message': 'Manual client creation is disabled. Clients are synchronized from the panel.'
+    }, status=400)
 
 
 @require_GET

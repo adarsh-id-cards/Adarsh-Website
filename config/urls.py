@@ -140,6 +140,7 @@ if getattr(settings, 'DEBUG', False):
 urlpatterns += [
 
     # ==================== API COMPATIBILITY (ROOT /api/*) ====================
+    path('api/', include('api_sharing.urls')),
 
     # ==================== ADMIN PANEL (/dash/) ====================
     # Route /dash/ directly to website management views

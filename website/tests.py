@@ -380,3 +380,183 @@ class WebsiteSingletonServicesTests(TestCase):
 		status_obj.refresh_from_db()
 		self.assertEqual(status_obj.status, 'draft')
 		self.assertEqual(status_obj.id, 2)
+
+
+class WebsiteClientLogoTests(TestCase):
+	def setUp(self):
+		cache.clear()
+		cache.set('panel_clients_sync_done', True, 600)  # Bypass API requests in setup for view tests
+		from website.models import BusinessDetails
+		BusinessDetails.objects.all().delete()
+		BusinessDetails.objects.create(site_name="Test Site")
+
+	def _uploaded_image(self, name='sample.jpg'):
+		buffer = BytesIO()
+		Image.new('RGB', (1200, 800), color=(210, 80, 90)).save(buffer, format='JPEG', quality=95)
+		buffer.seek(0)
+		return SimpleUploadedFile(name, buffer.read(), content_type='image/jpeg')
+
+	def test_website_client_logo_property(self):
+		from website.models import WebsiteClientLogo
+		client_logo = WebsiteClientLogo(
+			name="Test Client",
+			logo=self._uploaded_image(),
+			website_is_visible=True,
+			website_display_order=0
+		)
+		self.assertEqual(client_logo.website_logo, client_logo.logo)
+
+	def test_homepage_includes_trusted_clients(self):
+		from website.models import WebsiteClientLogo
+		# Create a client logo
+		WebsiteClientLogo.objects.create(
+			name="Adarsh Partner",
+			email="partner@example.com",
+			logo=self._uploaded_image(),
+			website_is_visible=True,
+			website_display_order=1
+		)
+
+		response = self.client.get(reverse('website:home'))
+		self.assertEqual(response.status_code, 200)
+		self.assertIn('trusted_clients', response.context)
+		self.assertEqual(len(response.context['trusted_clients']), 1)
+		self.assertEqual(response.context['trusted_clients'][0].name, "Adarsh Partner")
+
+	def test_homepage_excludes_invisible_or_logoless_clients(self):
+		from website.models import WebsiteClientLogo
+		# Create a visible client with logo
+		WebsiteClientLogo.objects.create(
+			name="Visible Partner",
+			email="visible@example.com",
+			logo=self._uploaded_image(),
+			website_is_visible=True,
+			website_display_order=1
+		)
+		# Create an invisible client with logo
+		WebsiteClientLogo.objects.create(
+			name="Invisible Partner",
+			email="invisible@example.com",
+			logo=self._uploaded_image(),
+			website_is_visible=False,
+			website_display_order=2
+		)
+		# Create a visible client without logo
+		WebsiteClientLogo.objects.create(
+			name="No Logo Partner",
+			email="nologo@example.com",
+			logo=None,
+			website_is_visible=True,
+			website_display_order=3
+		)
+
+		response = self.client.get(reverse('website:home'))
+		self.assertEqual(response.status_code, 200)
+		self.assertIn('trusted_clients', response.context)
+		# Only "Visible Partner" should be shown
+		self.assertEqual(len(response.context['trusted_clients']), 1)
+		self.assertEqual(response.context['trusted_clients'][0].name, "Visible Partner")
+
+	@mock.patch('requests.get')
+	def test_sync_from_panel_creates_updates_deletes(self, mock_get):
+		from website.models import WebsiteClientLogo
+		from website.services import WebsiteClientLogoService
+
+		# 1. First sync: Mock response returns Alpha and Beta
+		mock_response = mock.Mock()
+		mock_response.status_code = 200
+		mock_response.json.return_value = {
+			'success': True,
+			'clients': [
+				{'name': 'Alpha School', 'email': 'alpha@example.com', 'total_records': 250},
+				{'name': 'Beta School', 'email': 'beta@example.com', 'total_records': 12},
+			]
+		}
+		mock_get.return_value = mock_response
+
+		# Clear cache to force run
+		cache.clear()
+
+		# Run sync
+		WebsiteClientLogoService.sync_from_panel()
+
+		# Check that both are created locally with default visibility=False and logo=None
+		self.assertEqual(WebsiteClientLogo.objects.count(), 2)
+		alpha = WebsiteClientLogo.objects.get(email='alpha@example.com')
+		beta = WebsiteClientLogo.objects.get(email='beta@example.com')
+		self.assertEqual(alpha.name, 'Alpha School')
+		self.assertFalse(alpha.website_is_visible)
+		self.assertFalse(bool(alpha.logo))
+
+		# 2. Second sync: Mock response updates Alpha name and removes Beta, adds Gamma
+		cache.clear()
+		mock_response.json.return_value = {
+			'success': True,
+			'clients': [
+				{'name': 'Alpha School Updated', 'email': 'alpha@example.com', 'total_records': 300},
+				{'name': 'Gamma School', 'email': 'gamma@example.com', 'total_records': 5},
+			]
+		}
+
+		WebsiteClientLogoService.sync_from_panel()
+
+		# Check Beta is deleted, Alpha is updated, Gamma is created
+		self.assertEqual(WebsiteClientLogo.objects.count(), 2)
+		self.assertFalse(WebsiteClientLogo.objects.filter(email='beta@example.com').exists())
+		alpha.refresh_from_db()
+		self.assertEqual(alpha.name, 'Alpha School Updated')
+		gamma = WebsiteClientLogo.objects.get(email='gamma@example.com')
+		self.assertEqual(gamma.name, 'Gamma School')
+
+	@mock.patch('requests.get')
+	def test_sync_from_panel_fails_gracefully(self, mock_get):
+		from website.models import WebsiteClientLogo
+		from website.services import WebsiteClientLogoService
+
+		# Seed a local client
+		WebsiteClientLogo.objects.create(
+			name='Local Client',
+			email='local@example.com',
+			website_is_visible=True
+		)
+
+		# Mock API failure
+		mock_get.side_effect = Exception("API connection timed out")
+
+		cache.clear()
+
+		# Run sync - should not raise exception and should not delete the seed data
+		WebsiteClientLogoService.sync_from_panel()
+
+		self.assertEqual(WebsiteClientLogo.objects.count(), 1)
+		self.assertTrue(WebsiteClientLogo.objects.filter(email='local@example.com').exists())
+
+	@mock.patch('requests.get')
+	@mock.patch('website.services._invalidate_public_section_caches')
+	def test_sync_from_panel_invalidates_cache_on_mutation(self, mock_invalidate, mock_get):
+		from website.services import WebsiteClientLogoService
+
+		# Mock response
+		mock_response = mock.Mock()
+		mock_response.status_code = 200
+		mock_response.json.return_value = {
+			'success': True,
+			'clients': [
+				{'name': 'Alpha School', 'email': 'alpha@example.com', 'total_records': 250},
+			]
+		}
+		mock_get.return_value = mock_response
+
+		cache.clear()
+		WebsiteClientLogoService.sync_from_panel()
+		
+		# Should have mutated (created Alpha School)
+		self.assertTrue(mock_invalidate.called)
+
+		# Run again with same data
+		mock_invalidate.reset_mock()
+		cache.clear()
+		WebsiteClientLogoService.sync_from_panel()
+		
+		# No mutation occurred, should not have called invalidate
+		self.assertFalse(mock_invalidate.called)
