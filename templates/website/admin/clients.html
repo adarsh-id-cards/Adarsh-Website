@@ -360,14 +360,49 @@
                 <option value="visible" {% if current_visibility == 'visible' %}selected{% endif %}>Visible on Landing</option>
                 <option value="hidden" {% if current_visibility == 'hidden' %}selected{% endif %}>Hidden from Landing</option>
             </select>
-            <button class="btn btn-sm btn-outline-primary" type="button" onclick="window.location.reload()">
-                <i class="fa-solid fa-rotate-right"></i> Refresh
+            <button class="btn btn-sm btn-outline-primary" type="button" onclick="location.href='?force_sync=1'">
+                <i class="fa-solid fa-arrows-rotate"></i> Sync Now
             </button>
         </div>
         <div class="notif-actions-right">
             <!-- Clients list synchronized from Portal API -->
         </div>
     </div>
+
+    <!-- Sync Diagnostics Banner -->
+    {% if last_sync %}
+        {% if not last_sync.success %}
+        <div class="sync-diagnostic-alert" style="margin: 15px; border-radius: 6px; padding: 12px 20px; border-left: 5px solid #dc3545; background-color: #f8d7da; color: #721c24; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <div style="font-weight: bold; margin-bottom: 5px; font-size: 1.05em; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-triangle-exclamation" style="color: #dc3545;"></i> 
+                <span>API Sync Failed</span>
+            </div>
+            <p style="margin: 0 0 8px 0; font-size: 0.92em; line-height: 1.4;">
+                The website failed to fetch clients from your Admin Panel. Please check the configurations in your <code>.env</code> file.
+            </p>
+            <div style="font-size: 0.88em; padding: 10px; background: rgba(255,255,255,0.4); border-radius: 4px; border: 1px solid rgba(220,53,69,0.15); font-family: monospace;">
+                <div style="margin-bottom: 4px;"><strong>Target URL:</strong> {{ last_sync.url }}</div>
+                <div style="margin-bottom: 4px;"><strong>Error details:</strong> <span style="color: #c92a2a; font-weight: bold;">{{ last_sync.message }}</span></div>
+                <div><strong>Last attempted:</strong> {{ last_sync.time_str }}</div>
+            </div>
+            <div style="margin-top: 10px;">
+                <a class="btn btn-sm btn-danger" href="?force_sync=1" style="font-size: 0.82em; padding: 4px 10px; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; background: #dc3545; border: none; color: #fff;">
+                    <i class="fa-solid fa-rotate"></i> Retry Sync
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div class="sync-diagnostic-alert" style="margin: 15px; border-radius: 6px; padding: 10px 18px; border-left: 5px solid #28a745; background-color: #d4edda; color: #155724; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-size: 0.9em; display: flex; flex-direction: column; gap: 4px;">
+            <div style="display: flex; align-items: center; gap: 8px; font-weight: bold;">
+                <i class="fa-solid fa-circle-check" style="color: #28a745;"></i>
+                <span>{{ last_sync.message }}</span>
+            </div>
+            <div style="font-size: 0.85em; opacity: 0.95; font-family: monospace;">
+                <span><strong>Target URL:</strong> {{ last_sync.url }} | <strong>Synced at:</strong> {{ last_sync.time_str }}</span>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
 
     <div class="notif-table-wrap">
         <table class="notif-table" id="clientsTable">

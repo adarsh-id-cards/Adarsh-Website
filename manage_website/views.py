@@ -250,6 +250,10 @@ def business_details_page(request):
 def clients_page(request):
     """Website client logo management page (local model)."""
     context = _get_base_context(request, 'clients')
+    from django.core.cache import cache
+    import datetime
+
+    force_sync = request.GET.get('force_sync') == '1'
 
     visibility_filter = (
         request.GET.get('visibility', '')
@@ -259,7 +263,7 @@ def clients_page(request):
     if visibility_filter not in ('visible', 'hidden'):
         visibility_filter = ''
 
-    clients_qs = list(WebsiteClientLogoService.list_all())
+    clients_qs = list(WebsiteClientLogoService.list_all(force=force_sync))
     if visibility_filter == 'visible':
         clients_qs = [c for c in clients_qs if bool(c.website_is_visible)]
     elif visibility_filter == 'hidden':
@@ -285,6 +289,14 @@ def clients_page(request):
         page_start = 0
         page_end = 0
 
+    last_sync = cache.get('panel_clients_last_sync')
+    if last_sync and 'timestamp' in last_sync:
+        try:
+            dt = datetime.datetime.fromtimestamp(last_sync['timestamp'])
+            last_sync['time_str'] = dt.strftime('%Y-%m-%d %H:%M:%S')
+        except Exception:
+            last_sync['time_str'] = ''
+
     context['clients_list'] = page_obj.object_list
     context['current_visibility'] = visibility_filter
     context['current_status'] = visibility_filter
@@ -294,6 +306,7 @@ def clients_page(request):
     context['total_clients_count'] = paginator.count
     context['page_start'] = page_start
     context['page_end'] = page_end
+    context['last_sync'] = last_sync
     return render(request, 'website/admin/clients.html', context)
 
 

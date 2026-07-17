@@ -309,13 +309,13 @@ class WebsiteClientLogoService:
     """Manage website logos stored locally in WebsiteClientLogo model."""
 
     @staticmethod
-    def sync_from_panel():
+    def sync_from_panel(force=False):
         """
         Fetch clients from Panel API and synchronize the local database.
         Caches sync state to avoid hammering the API.
         """
         cache_key = 'panel_clients_sync_done'
-        if cache.get(cache_key):
+        if not force and cache.get(cache_key):
             return
 
         from django.conf import settings
@@ -384,16 +384,50 @@ class WebsiteClientLogoService:
                     
                     # Cache the successful sync status for 2 minutes
                     cache.set(cache_key, True, 120)
+
+                    # Set the sync result in cache
+                    cache.set('panel_clients_last_sync', {
+                        'success': True,
+                        'message': f"Successfully synced {len(clients)} clients from panel.",
+                        'timestamp': int(time.time()),
+                        'url': url,
+                    }, 86400)
+                else:
+                    error_msg = data.get('message', 'API returned success=False')
+                    logger.error("Failed to sync from panel: %s", error_msg)
+                    cache.set('panel_clients_last_sync', {
+                        'success': False,
+                        'message': f"Panel API Error: {error_msg}",
+                        'timestamp': int(time.time()),
+                        'url': url,
+                    }, 86400)
             else:
+                error_msg = f"HTTP status code {response.status_code}"
                 logger.error("Panel API returned status %s: %s", response.status_code, response.text)
+                cache.set('panel_clients_last_sync', {
+                    'success': False,
+                    'message': f"Connection Error: {error_msg}",
+                    'timestamp': int(time.time()),
+                    'url': url,
+                }, 86400)
         except Exception as exc:
+            error_msg = str(exc)
             logger.error("Failed to sync client logos from panel: %s", exc)
+            cache.set('panel_clients_last_sync', {
+                'success': False,
+                'message': f"Request Error: {error_msg}",
+                'timestamp': int(time.time()),
+                'url': url,
+            }, 86400)
 
     @staticmethod
-    def list_all():
+    def list_all(force=False):
         """Return all client logos ordered by display order."""
         try:
-            WebsiteClientLogoService.sync_from_panel()
+            # If database is empty, force sync to bypass cache
+            if not force and not WebsiteClientLogo.objects.exists():
+                force = True
+            WebsiteClientLogoService.sync_from_panel(force=force)
         except Exception as exc:
             logger.error("Failed to sync from panel in list_all: %s", exc)
         return WebsiteClientLogo.objects.all().order_by('website_display_order', '-created_at')
